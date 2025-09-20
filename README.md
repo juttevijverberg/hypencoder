@@ -216,7 +216,7 @@ The artifacts from our experiments are in the table below:
 | [Run Files](https://drive.google.com/drive/folders/1Q1U9Aa4bw_wK-EbAs9xCyUvBYxoUOVEG?usp=sharing) | All the run files for experiments |
 </center>
 
-The above artifacts are stored on Google Drive, if you want to download them without going through the UI, I suggest looking at [gdown](https://github.com/wkentaro/gdown) or the Google Cloud interface provided by [rclone](https://rclone.org/drive).
+The above artifacts are stored on Google Drive, if you want to download them without going through the UI you can, but I suggest looking at [gdown](https://github.com/wkentaro/gdown) or the Google Drive interface provided by [rclone](https://rclone.org/drive).
 
 We have also uploaded all the run files for our experiments (FollowIR coming soon). They are a custom JSONL format, but they should be pretty straightforward to convert to any other format. We may also add standard TREC run files in future if there is interest.
 
@@ -226,13 +226,20 @@ If you are interested in working on new projects around Hypencoder or other area
 
 ## Citation
 ```
-@misc{killingback2025hypencoderhypernetworksinformationretrieval,
-      title={Hypencoder: Hypernetworks for Information Retrieval},
-      author={Julian Killingback and Hansi Zeng and Hamed Zamani},
-      year={2025},
-      eprint={2502.05364},
-      archivePrefix={arXiv},
-      primaryClass={cs.IR},
-      url={https://arxiv.org/abs/2502.05364},
+@inproceedings{hypencoder,
+    author = {Killingback, Julian and Zeng, Hansi and Zamani, Hamed},
+    title = {Hypencoder: Hypernetworks for Information Retrieval},
+    year = {2025},
+    isbn = {9798400715921},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3726302.3729983},
+    doi = {10.1145/3726302.3729983},
+    booktitle = {Proceedings of the 48th International ACM SIGIR Conference on Research and Development in Information Retrieval},
+    pages = {2372–2383},
+    numpages = {12},
+    keywords = {learning to rank, neural ranking models, retrieval models},
+    location = {Padua, Italy},
+    series = {SIGIR '25}
 }
 ```
