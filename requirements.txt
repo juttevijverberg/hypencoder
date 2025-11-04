@@ -1,0 +1,16 @@
+# Core libraries
+torch
+transformers
+
+# Encoding & retrieval
+fire
+tqdm
+ir_datasets
+jsonlines
+docarray
+numpy
+ir_measures
+
+# Training
+omegaconf
+datasets
