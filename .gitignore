@@ -166,3 +166,5 @@ cython_debug/
 .vscode
 /wandb
 /node_modules
+/encoded_items
+/.ir_datasets
