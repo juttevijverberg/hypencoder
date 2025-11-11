@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_mig
+#SBATCH --gpus=1
+#SBATCH --job-name=get_followIR
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=02:00:00
+#SBATCH --output=outputs/get_followIR.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype
+python get_data_hard_tasks.py

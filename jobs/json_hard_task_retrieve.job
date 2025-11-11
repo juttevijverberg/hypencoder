@@ -1,0 +1,47 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=json_hard_task_retrieve
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=02:00:00
+#SBATCH --output=outputs/json_task_retrieve.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype
+
+export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"                  # from huggingface using from_pretrained
+export DATA="core17"
+export ENCODING_PATH="$HOME/hypencoder/encoded_items/$DATA"      # path to save encoded items
+export QUERY_PATH="$HOME/hypencoder/data/$DATA/queries_queries.json"
+
+# for type in og changed; do
+#     export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/$DATA/${type}"
+#     export QREL_PATH="$HOME/hypencoder/data/$DATA/qrels_${type}_correct.json"
+#     mkdir -p "$RETRIEVAL_DIR"
+
+#     python hypencoder_cb/inference/retrieve.py \
+#     --model_name_or_path=$MODEL_NAME_OR_PATH \
+#     --encoded_item_path=$ENCODING_PATH \
+#     --output_dir=$RETRIEVAL_DIR \
+#     --query_jsonl=$QUERY_PATH \
+#     --qrel_json=$QREL_PATH \
+#     --query_id_key="_id" \
+#     --query_text_key="text" \
+#     --metric_names='["AP", "RR"]'
+# done
+
+# python scripts/p-MRR.py \
+# --og_items= \
+# --new_items="$HOME/hypencoder/retrieval_outputs/$DATA/changed/retrieved_items.jsonl" \
+# --og_metrics="$HOME/hypencoder/retrieval_outputs/$DATA/og/metrics/aggregated_metrics.json" \
+# --new_metrics="$HOME/hypencoder/retrieval_outputs/$DATA/changed/metrics/aggregated_metrics.json" \
+# --output="$HOME/hypencoder/retrieval_outputs/$DATA/p_MRR.json"
+python compute_p_mrr.py \
+--og "$HOME/hypencoder/retrieval_outputs/$DATA/og/retrieved_items.jsonl" \
+--new changed_per_query.json \
+--output aggregated_metrics.json

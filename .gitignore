@@ -1,5 +1,6 @@
 # Added in reproducibility study
 *outputs/
+*data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
