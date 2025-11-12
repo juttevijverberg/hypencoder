@@ -10,7 +10,16 @@ import shutil
 import tempfile
 import io
 
-def download_ir(dest_path):
+def download_followir_train(dest_path):
+    ds = load_dataset("samaya-ai/msmarco-w-instructions")
+    base = Path(dest_path)
+    base.mkdir(parents=True, exist_ok=True)
+    
+    for split, data in ds.items():
+        data.to_json(base / f"{split}.json")
+    print(f"✅ Finished downloading MSMARCO instructions dataset to {base}")
+
+def download_followir_test(dest_path):
     datasets = [
         "jhu-clsp/robust04-instructions",
         "jhu-clsp/news21-instructions",
@@ -33,23 +42,6 @@ def download_ir(dest_path):
             except Exception:
                 pass
     print(f"✅ Finished downloading FollowIR datasets to {base}")
-
-def download_tot(dest_path):
-    ds = ir_datasets.load("trec-tot/2023/dev")
-    base = Path(dest_path)
-    base.mkdir(parents=True, exist_ok=True)
-    data = [{"query_id": q.query_id, "text": q.text} for q in ds.queries_iter()]
-    with open(base / "dev.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    print(f"✅ Finished saving TOT dev queries to {base / 'dev.json'}")
-
-def download_msmarco(dest_path):
-    ds = load_dataset("samaya-ai/msmarco-w-instructions")
-    base = Path(dest_path)
-    base.mkdir(parents=True, exist_ok=True)
-    for split, data in ds.items():
-        data.to_json(base / f"{split}.json")
-    print(f"✅ Finished downloading MSMARCO instructions dataset to {base}")
 
 def download_tot_train(dest_path):
     """Download and extract all files from the 'data_release' folder of the TOMT GitHub repo."""
@@ -78,8 +70,26 @@ def download_tot_train(dest_path):
     fetch_dir(api_url, base)
     print(f"✅ Finished downloading and extracting TOMT data to {base}")
 
+def download_tot_test(dest_path):
+    ds = ir_datasets.load("trec-tot/2023/dev")
+    base = Path(dest_path)
+    base.mkdir(parents=True, exist_ok=True)
 
-def download_trec_dl_hard(dest_path):
+    q_data = [{"query_id": q.query_id, "text": q.text} for q in ds.queries_iter()]
+    with open(base / "queries.json", "w", encoding="utf-8") as f:
+        json.dump(q_data, f, ensure_ascii=False, indent=2)
+
+    d_data = [{"doc_id": d.doc_id, "text": d.text} for d in ds.docs_iter()]
+    with open(base / "corpus.json", "w", encoding="utf-8") as f:
+        json.dump(d_data, f, ensure_ascii=False, indent=2)
+
+    qrels_data = [{"query_id": qrel.query_id, "doc_id": qrel.doc_id, "relevance": qrel.relevance} for qrel in ds.qrels_iter()]
+    with open(base / "qrels.json", "w", encoding="utf-8") as f:
+        json.dump(qrels_data, f, ensure_ascii=False, indent=2)
+
+    print(f"✅ Finished saving TOT docs, queries and qrels to {base}")
+
+def download_dl_hard_test(dest_path):
     """
     Save queries and qrels for msmarco-passage/trec-dl-hard to dest_path.
     (Corpus is intentionally skipped due to its very large size.)
@@ -102,19 +112,19 @@ def download_trec_dl_hard(dest_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data", choices=["FollowIR", "TOT", "MSMARCO_Instructions", "TOT_train", "TREC_DL_HARD"], required=True,
+    parser.add_argument("--data", choices=["FollowIR_test", "TOT_test", "FollowIR_train", "TOT_train", "DL_HARD_test"], required=True,
                         help="Select dataset type to download")
     parser.add_argument("--dest_path", required=True,
                         help="Full destination folder (e.g., data/TOT/test)")
     args = parser.parse_args()
 
-    if args.data == "FollowIR":
-        download_ir(args.dest_path)
-    elif args.data == "TOT":
-        download_tot(args.dest_path)
-    elif args.data == "MSMARCO_Instructions":
-        download_msmarco(args.dest_path)
+    if args.data == "FollowIR_test":
+        download_followir_test(args.dest_path)
+    elif args.data == "TOT_test":
+        download_tot_test(args.dest_path)
+    elif args.data == "FollowIR_train":
+        download_followir_train(args.dest_path)
     elif args.data == "TOT_train":
         download_tot_train(args.dest_path)
-    elif args.data == "TREC_DL_HARD":
-        download_trec_dl_hard(args.dest_path)
+    elif args.data == "DL_HARD_test":
+        download_dl_hard_test(args.dest_path)
