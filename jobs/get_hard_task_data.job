@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=get_hard_task_data
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=00:10:00
+#SBATCH --output=outputs/get_hard_task_data.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype
+
+# python scripts/get_data_hard_tasks.py --data FollowIR --dest_path "data/FollowIR/test" # Options: FollowIR, TOT
+# python scripts/get_data_hard_tasks.py --data TOT --dest_path "data/TOT/test"
+# python scripts/get_data_hard_tasks.py --data MSMARCO_Instructions --dest_path "data/FollowIR/train"
+# python scripts/get_data_hard_tasks.py --data TOT_train --dest_path "data/TOT/train"
+python scripts/get_data_hard_tasks.py --data TREC_DL_HARD --dest_path "data/DL_HARD/test"
+
+#For getting the training data of TOT, download from https://github.com/samarthbhargav/tomt-data
