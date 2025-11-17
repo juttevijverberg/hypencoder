@@ -2,11 +2,11 @@
 
 #SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
-#SBATCH --job-name=hard_task_retrieve
+#SBATCH --job-name=tot-dev_retrieve
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
 #SBATCH --time=02:00:00
-#SBATCH --output=outputs/hard_task_retrieve.out
+#SBATCH --output=outputs/tot-dev_retrieve.out
 
 module purge
 module load 2023
@@ -15,13 +15,16 @@ module load Anaconda3/2023.07-2
 source activate hype
 
 export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"                  # from huggingface using from_pretrained
-export ENCODING_PATH="$HOME/hypencoder/encoded_items/trec-tot-dev"      # path to save encoded items
-export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/trec-tot-dev"
+export ENCODING_PATH="$HOME/hypencoder/encoded_items/tot-dev"      # path to save encoded items
+export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/tot-dev"
 mkdir -p "$RETRIEVAL_DIR"
 
 python hypencoder_cb/inference/retrieve.py \
 --model_name_or_path=$MODEL_NAME_OR_PATH \
 --encoded_item_path=$ENCODING_PATH \
 --output_dir=$RETRIEVAL_DIR \
---ir_dataset_name="trec-tot/2023/dev" \
---metric_names='ndcg@10,RR,R@100,ndcg@1000'
+--query_jsonl="$HOME/hypencoder/data/TOT/test/queries.json"
+--qrel_json="$HOME/hypencoder/data/TOT/test/qrels.json"
+--query_id_key="query_id"
+--query_text_key="text"
+--metric_names='ndcg@10,RR,ndcg@1000'

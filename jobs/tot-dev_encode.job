@@ -2,11 +2,11 @@
 
 #SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
-#SBATCH --job-name=hard_task_encode
+#SBATCH --job-name=tot-dev_encode
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
 #SBATCH --time=01:00:00
-#SBATCH --output=outputs/hard_task_encode.out
+#SBATCH --output=outputs/tot-dev_encode.out
 
 module purge
 module load 2023
@@ -14,16 +14,13 @@ module load Anaconda3/2023.07-2
 
 source activate hype
 
-rm -f "$HOME/encoded_items/trec-tot-dev.docs"
-#rm -f "$HOME/encoded_items/trec-tot-dev.docs.tmp" 
-
 export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"                  # from huggingface using from_pretrained
-export ENCODING_PATH="$HOME/hypencoder/encoded_items/trec-tot-dev"      # path to save encoded items
+export ENCODING_PATH="$HOME/hypencoder/encoded_items/tot-dev"      # path to save encoded items
 mkdir -p "$ENCODING_PATH"
-
-# Dataset names: disks45/nocr/trec-robust-2004, trec-core-2017, trec-news-2021
 
 python hypencoder_cb/inference/encode.py \
   --model_name_or_path="$MODEL_NAME_OR_PATH" \
   --output_path="$ENCODING_PATH" \
-  --ir_dataset_name="trec-tot/2023/dev"        # from huggingface, downloaded into .ir_datasets
+  --jsonl_path="$HOME/hypencoder/data/TOT/test/corpus.json" \
+  --item_id_key="doc_id" \
+  --item_text_key="text"

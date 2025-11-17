@@ -960,6 +960,136 @@
     "relevance": 0
   },
   {
+    "query_id": "794429",
+    "doc_id": "8663241",
+    "relevance": 3
+  },
+  {
+    "query_id": "794429",
+    "doc_id": "8663243",
+    "relevance": 3
+  },
+  {
+    "query_id": "794429",
+    "doc_id": "8663244",
+    "relevance": 2
+  },
+  {
+    "query_id": "794429",
+    "doc_id": "3640296",
+    "relevance": 0
+  },
+  {
+    "query_id": "794429",
+    "doc_id": "3555425",
+    "relevance": 1
+  },
+  {
+    "query_id": "794429",
+    "doc_id": "8663245",
+    "relevance": 0
+  },
+  {
+    "query_id": "794429",
+    "doc_id": "3165092",
+    "relevance": 0
+  },
+  {
+    "query_id": "794429",
+    "doc_id": "3082079",
+    "relevance": 0
+  },
+  {
+    "query_id": "801118",
+    "doc_id": "8708701",
+    "relevance": 3
+  },
+  {
+    "query_id": "801118",
+    "doc_id": "2170594",
+    "relevance": 3
+  },
+  {
+    "query_id": "801118",
+    "doc_id": "4498119",
+    "relevance": 2
+  },
+  {
+    "query_id": "801118",
+    "doc_id": "8708702",
+    "relevance": 1
+  },
+  {
+    "query_id": "801118",
+    "doc_id": "2170597",
+    "relevance": 1
+  },
+  {
+    "query_id": "801118",
+    "doc_id": "61022",
+    "relevance": 3
+  },
+  {
+    "query_id": "801118",
+    "doc_id": "61023",
+    "relevance": 1
+  },
+  {
+    "query_id": "801118",
+    "doc_id": "1608335",
+    "relevance": 1
+  },
+  {
+    "query_id": "190044",
+    "doc_id": "1353072",
+    "relevance": 3
+  },
+  {
+    "query_id": "190044",
+    "doc_id": "1353077",
+    "relevance": 1
+  },
+  {
+    "query_id": "190044",
+    "doc_id": "1353073",
+    "relevance": 3
+  },
+  {
+    "query_id": "190044",
+    "doc_id": "1353074",
+    "relevance": 0
+  },
+  {
+    "query_id": "190044",
+    "doc_id": "8305787",
+    "relevance": 3
+  },
+  {
+    "query_id": "190044",
+    "doc_id": "8305788",
+    "relevance": 1
+  },
+  {
+    "query_id": "190044",
+    "doc_id": "8305789",
+    "relevance": 1
+  },
+  {
+    "query_id": "190044",
+    "doc_id": "7354425",
+    "relevance": 1
+  },
+  {
+    "query_id": "190044",
+    "doc_id": "886800",
+    "relevance": 3
+  },
+  {
+    "query_id": "190044",
+    "doc_id": "886798",
+    "relevance": 1
+  },
+  {
     "query_id": "451602",
     "doc_id": "103181",
     "relevance": 3
@@ -2060,6 +2190,251 @@
     "relevance": 3
   },
   {
+    "query_id": "177604",
+    "doc_id": "8451987",
+    "relevance": 0
+  },
+  {
+    "query_id": "177604",
+    "doc_id": "8451989",
+    "relevance": 0
+  },
+  {
+    "query_id": "177604",
+    "doc_id": "8451988",
+    "relevance": 1
+  },
+  {
+    "query_id": "177604",
+    "doc_id": "8451990",
+    "relevance": 1
+  },
+  {
+    "query_id": "177604",
+    "doc_id": "8451993",
+    "relevance": 2
+  },
+  {
+    "query_id": "177604",
+    "doc_id": "8451991",
+    "relevance": 2
+  },
+  {
+    "query_id": "177604",
+    "doc_id": "8451992",
+    "relevance": 3
+  },
+  {
+    "query_id": "177604",
+    "doc_id": "8451994",
+    "relevance": 0
+  },
+  {
+    "query_id": "177604",
+    "doc_id": "8451995",
+    "relevance": 2
+  },
+  {
+    "query_id": "177604",
+    "doc_id": "8451996",
+    "relevance": 2
+  },
+  {
+    "query_id": "966413",
+    "doc_id": "8798753",
+    "relevance": 0
+  },
+  {
+    "query_id": "966413",
+    "doc_id": "1339370",
+    "relevance": 2
+  },
+  {
+    "query_id": "966413",
+    "doc_id": "8798754",
+    "relevance": 2
+  },
+  {
+    "query_id": "966413",
+    "doc_id": "1339367",
+    "relevance": 2
+  },
+  {
+    "query_id": "966413",
+    "doc_id": "1339373",
+    "relevance": 2
+  },
+  {
+    "query_id": "966413",
+    "doc_id": "8798752",
+    "relevance": 2
+  },
+  {
+    "query_id": "966413",
+    "doc_id": "1001949",
+    "relevance": 0
+  },
+  {
+    "query_id": "966413",
+    "doc_id": "1001954",
+    "relevance": 1
+  },
+  {
+    "query_id": "966413",
+    "doc_id": "8798755",
+    "relevance": 3
+  },
+  {
+    "query_id": "966413",
+    "doc_id": "8798756",
+    "relevance": 1
+  },
+  {
+    "query_id": "588587",
+    "doc_id": "8548227",
+    "relevance": 1
+  },
+  {
+    "query_id": "588587",
+    "doc_id": "8548223",
+    "relevance": 1
+  },
+  {
+    "query_id": "588587",
+    "doc_id": "8548228",
+    "relevance": 1
+  },
+  {
+    "query_id": "588587",
+    "doc_id": "8548224",
+    "relevance": 1
+  },
+  {
+    "query_id": "588587",
+    "doc_id": "8548225",
+    "relevance": 1
+  },
+  {
+    "query_id": "588587",
+    "doc_id": "8548226",
+    "relevance": 1
+  },
+  {
+    "query_id": "588587",
+    "doc_id": "8548229",
+    "relevance": 1
+  },
+  {
+    "query_id": "588587",
+    "doc_id": "4929119",
+    "relevance": 1
+  },
+  {
+    "query_id": "588587",
+    "doc_id": "8548222",
+    "relevance": 1
+  },
+  {
+    "query_id": "588587",
+    "doc_id": "1740350",
+    "relevance": 1
+  },
+  {
+    "query_id": "1108939",
+    "doc_id": "8172842",
+    "relevance": 1
+  },
+  {
+    "query_id": "1108939",
+    "doc_id": "7077720",
+    "relevance": 2
+  },
+  {
+    "query_id": "1108939",
+    "doc_id": "8172841",
+    "relevance": 1
+  },
+  {
+    "query_id": "1108939",
+    "doc_id": "8172849",
+    "relevance": 0
+  },
+  {
+    "query_id": "1108939",
+    "doc_id": "8172843",
+    "relevance": 2
+  },
+  {
+    "query_id": "1108939",
+    "doc_id": "8172845",
+    "relevance": 0
+  },
+  {
+    "query_id": "1108939",
+    "doc_id": "8172846",
+    "relevance": 0
+  },
+  {
+    "query_id": "1108939",
+    "doc_id": "8172847",
+    "relevance": 1
+  },
+  {
+    "query_id": "1108939",
+    "doc_id": "8172848",
+    "relevance": 1
+  },
+  {
+    "query_id": "1108939",
+    "doc_id": "8172844",
+    "relevance": 1
+  },
+  {
+    "query_id": "507445",
+    "doc_id": "1799114",
+    "relevance": 1
+  },
+  {
+    "query_id": "507445",
+    "doc_id": "8407104",
+    "relevance": 1
+  },
+  {
+    "query_id": "507445",
+    "doc_id": "8407105",
+    "relevance": 0
+  },
+  {
+    "query_id": "507445",
+    "doc_id": "8407107",
+    "relevance": 1
+  },
+  {
+    "query_id": "507445",
+    "doc_id": "8407108",
+    "relevance": 1
+  },
+  {
+    "query_id": "507445",
+    "doc_id": "8407106",
+    "relevance": 1
+  },
+  {
+    "query_id": "507445",
+    "doc_id": "8407109",
+    "relevance": 2
+  },
+  {
+    "query_id": "507445",
+    "doc_id": "8407110",
+    "relevance": 2
+  },
+  {
+    "query_id": "507445",
+    "doc_id": "4138785",
+    "relevance": 3
+  },
+  {
     "query_id": "527433",
     "doc_id": "1000485",
     "relevance": 3
@@ -2860,6 +3235,56 @@
     "relevance": 2
   },
   {
+    "query_id": "1056204",
+    "doc_id": "3343478",
+    "relevance": 3
+  },
+  {
+    "query_id": "1056204",
+    "doc_id": "3756800",
+    "relevance": 3
+  },
+  {
+    "query_id": "1056204",
+    "doc_id": "8722741",
+    "relevance": 2
+  },
+  {
+    "query_id": "1056204",
+    "doc_id": "8722738",
+    "relevance": 3
+  },
+  {
+    "query_id": "1056204",
+    "doc_id": "8722740",
+    "relevance": 3
+  },
+  {
+    "query_id": "1056204",
+    "doc_id": "8722739",
+    "relevance": 3
+  },
+  {
+    "query_id": "1056204",
+    "doc_id": "8722744",
+    "relevance": 2
+  },
+  {
+    "query_id": "1056204",
+    "doc_id": "8722742",
+    "relevance": 1
+  },
+  {
+    "query_id": "1056204",
+    "doc_id": "8722743",
+    "relevance": 1
+  },
+  {
+    "query_id": "1056204",
+    "doc_id": "8722745",
+    "relevance": 1
+  },
+  {
     "query_id": "1114646",
     "doc_id": "1002453",
     "relevance": 0
@@ -3613,6 +4038,56 @@
     "query_id": "1114646",
     "doc_id": "994965",
     "relevance": 0
+  },
+  {
+    "query_id": "264403",
+    "doc_id": "8313913",
+    "relevance": 1
+  },
+  {
+    "query_id": "264403",
+    "doc_id": "8313915",
+    "relevance": 1
+  },
+  {
+    "query_id": "264403",
+    "doc_id": "8313908",
+    "relevance": 3
+  },
+  {
+    "query_id": "264403",
+    "doc_id": "8313910",
+    "relevance": 1
+  },
+  {
+    "query_id": "264403",
+    "doc_id": "8313912",
+    "relevance": 1
+  },
+  {
+    "query_id": "264403",
+    "doc_id": "8313914",
+    "relevance": 3
+  },
+  {
+    "query_id": "264403",
+    "doc_id": "4612106",
+    "relevance": 1
+  },
+  {
+    "query_id": "264403",
+    "doc_id": "8313907",
+    "relevance": 1
+  },
+  {
+    "query_id": "264403",
+    "doc_id": "8313909",
+    "relevance": 1
+  },
+  {
+    "query_id": "264403",
+    "doc_id": "8313911",
+    "relevance": 1
   },
   {
     "query_id": "87452",
@@ -5845,6 +6320,131 @@
     "relevance": 0
   },
   {
+    "query_id": "537817",
+    "doc_id": "8527917",
+    "relevance": 2
+  },
+  {
+    "query_id": "537817",
+    "doc_id": "8527921",
+    "relevance": 2
+  },
+  {
+    "query_id": "537817",
+    "doc_id": "8527914",
+    "relevance": 0
+  },
+  {
+    "query_id": "537817",
+    "doc_id": "8527919",
+    "relevance": 1
+  },
+  {
+    "query_id": "537817",
+    "doc_id": "8527913",
+    "relevance": 2
+  },
+  {
+    "query_id": "537817",
+    "doc_id": "8527920",
+    "relevance": 2
+  },
+  {
+    "query_id": "537817",
+    "doc_id": "8527916",
+    "relevance": 1
+  },
+  {
+    "query_id": "537817",
+    "doc_id": "8527918",
+    "relevance": 0
+  },
+  {
+    "query_id": "537817",
+    "doc_id": "8527915",
+    "relevance": 3
+  },
+  {
+    "query_id": "537817",
+    "doc_id": "540366",
+    "relevance": 1
+  },
+  {
+    "query_id": "86606",
+    "doc_id": "100649",
+    "relevance": 2
+  },
+  {
+    "query_id": "86606",
+    "doc_id": "100641",
+    "relevance": 1
+  },
+  {
+    "query_id": "86606",
+    "doc_id": "100646",
+    "relevance": 1
+  },
+  {
+    "query_id": "86606",
+    "doc_id": "100650",
+    "relevance": 1
+  },
+  {
+    "query_id": "86606",
+    "doc_id": "100644",
+    "relevance": 3
+  },
+  {
+    "query_id": "86606",
+    "doc_id": "100645",
+    "relevance": 2
+  },
+  {
+    "query_id": "86606",
+    "doc_id": "100647",
+    "relevance": 3
+  },
+  {
+    "query_id": "86606",
+    "doc_id": "100648",
+    "relevance": 3
+  },
+  {
+    "query_id": "88495",
+    "doc_id": "8641815",
+    "relevance": 3
+  },
+  {
+    "query_id": "88495",
+    "doc_id": "8641818",
+    "relevance": 3
+  },
+  {
+    "query_id": "88495",
+    "doc_id": "8641821",
+    "relevance": 3
+  },
+  {
+    "query_id": "88495",
+    "doc_id": "8641817",
+    "relevance": 1
+  },
+  {
+    "query_id": "88495",
+    "doc_id": "8641822",
+    "relevance": 1
+  },
+  {
+    "query_id": "88495",
+    "doc_id": "8256963",
+    "relevance": 1
+  },
+  {
+    "query_id": "88495",
+    "doc_id": "815080",
+    "relevance": 1
+  },
+  {
     "query_id": "877809",
     "doc_id": "1030813",
     "relevance": 1
@@ -6878,6 +7478,236 @@
     "query_id": "877809",
     "doc_id": "902417",
     "relevance": 0
+  },
+  {
+    "query_id": "554515",
+    "doc_id": "8345477",
+    "relevance": 2
+  },
+  {
+    "query_id": "554515",
+    "doc_id": "8345478",
+    "relevance": 1
+  },
+  {
+    "query_id": "554515",
+    "doc_id": "8345479",
+    "relevance": 1
+  },
+  {
+    "query_id": "554515",
+    "doc_id": "8345482",
+    "relevance": 2
+  },
+  {
+    "query_id": "554515",
+    "doc_id": "8345483",
+    "relevance": 2
+  },
+  {
+    "query_id": "554515",
+    "doc_id": "8345480",
+    "relevance": 2
+  },
+  {
+    "query_id": "554515",
+    "doc_id": "8345481",
+    "relevance": 1
+  },
+  {
+    "query_id": "554515",
+    "doc_id": "8345484",
+    "relevance": 3
+  },
+  {
+    "query_id": "554515",
+    "doc_id": "8345486",
+    "relevance": 1
+  },
+  {
+    "query_id": "554515",
+    "doc_id": "8345485",
+    "relevance": 2
+  },
+  {
+    "query_id": "1065636",
+    "doc_id": "8830583",
+    "relevance": 1
+  },
+  {
+    "query_id": "1065636",
+    "doc_id": "8830580",
+    "relevance": 1
+  },
+  {
+    "query_id": "1065636",
+    "doc_id": "8830582",
+    "relevance": 1
+  },
+  {
+    "query_id": "1065636",
+    "doc_id": "8830585",
+    "relevance": 1
+  },
+  {
+    "query_id": "1065636",
+    "doc_id": "8830587",
+    "relevance": 1
+  },
+  {
+    "query_id": "1065636",
+    "doc_id": "8830588",
+    "relevance": 1
+  },
+  {
+    "query_id": "1065636",
+    "doc_id": "8830589",
+    "relevance": 2
+  },
+  {
+    "query_id": "1065636",
+    "doc_id": "8830581",
+    "relevance": 0
+  },
+  {
+    "query_id": "1065636",
+    "doc_id": "8830584",
+    "relevance": 1
+  },
+  {
+    "query_id": "1065636",
+    "doc_id": "8830586",
+    "relevance": 2
+  },
+  {
+    "query_id": "1133485",
+    "doc_id": "8229598",
+    "relevance": 2
+  },
+  {
+    "query_id": "1133485",
+    "doc_id": "1374083",
+    "relevance": 2
+  },
+  {
+    "query_id": "1133485",
+    "doc_id": "8229596",
+    "relevance": 1
+  },
+  {
+    "query_id": "1133485",
+    "doc_id": "8229600",
+    "relevance": 2
+  },
+  {
+    "query_id": "1133485",
+    "doc_id": "8229601",
+    "relevance": 2
+  },
+  {
+    "query_id": "1133485",
+    "doc_id": "8229603",
+    "relevance": 0
+  },
+  {
+    "query_id": "1133485",
+    "doc_id": "8229602",
+    "relevance": 1
+  },
+  {
+    "query_id": "1133485",
+    "doc_id": "1368577",
+    "relevance": 0
+  },
+  {
+    "query_id": "166046",
+    "doc_id": "96920",
+    "relevance": 2
+  },
+  {
+    "query_id": "166046",
+    "doc_id": "96925",
+    "relevance": 1
+  },
+  {
+    "query_id": "166046",
+    "doc_id": "96921",
+    "relevance": 1
+  },
+  {
+    "query_id": "166046",
+    "doc_id": "96924",
+    "relevance": 1
+  },
+  {
+    "query_id": "166046",
+    "doc_id": "96922",
+    "relevance": 1
+  },
+  {
+    "query_id": "166046",
+    "doc_id": "96926",
+    "relevance": 1
+  },
+  {
+    "query_id": "166046",
+    "doc_id": "96927",
+    "relevance": 2
+  },
+  {
+    "query_id": "166046",
+    "doc_id": "96928",
+    "relevance": 0
+  },
+  {
+    "query_id": "655914",
+    "doc_id": "8613490",
+    "relevance": 2
+  },
+  {
+    "query_id": "655914",
+    "doc_id": "8613494",
+    "relevance": 3
+  },
+  {
+    "query_id": "655914",
+    "doc_id": "8613497",
+    "relevance": 1
+  },
+  {
+    "query_id": "655914",
+    "doc_id": "8613489",
+    "relevance": 0
+  },
+  {
+    "query_id": "655914",
+    "doc_id": "8613491",
+    "relevance": 1
+  },
+  {
+    "query_id": "655914",
+    "doc_id": "8613493",
+    "relevance": 1
+  },
+  {
+    "query_id": "655914",
+    "doc_id": "8613495",
+    "relevance": 2
+  },
+  {
+    "query_id": "655914",
+    "doc_id": "8613496",
+    "relevance": 1
+  },
+  {
+    "query_id": "655914",
+    "doc_id": "8613492",
+    "relevance": 1
+  },
+  {
+    "query_id": "655914",
+    "doc_id": "8613498",
+    "relevance": 2
   },
   {
     "query_id": "730539",
@@ -8915,6 +9745,41 @@
     "relevance": 0
   },
   {
+    "query_id": "144862",
+    "doc_id": "92233",
+    "relevance": 2
+  },
+  {
+    "query_id": "144862",
+    "doc_id": "92237",
+    "relevance": 2
+  },
+  {
+    "query_id": "144862",
+    "doc_id": "92238",
+    "relevance": 2
+  },
+  {
+    "query_id": "144862",
+    "doc_id": "92239",
+    "relevance": 2
+  },
+  {
+    "query_id": "144862",
+    "doc_id": "92240",
+    "relevance": 0
+  },
+  {
+    "query_id": "144862",
+    "doc_id": "92241",
+    "relevance": 2
+  },
+  {
+    "query_id": "144862",
+    "doc_id": "92242",
+    "relevance": 2
+  },
+  {
     "query_id": "1106007",
     "doc_id": "1020463",
     "relevance": 1
@@ -9803,6 +10668,56 @@
     "query_id": "1106007",
     "doc_id": "99720",
     "relevance": 0
+  },
+  {
+    "query_id": "883915",
+    "doc_id": "8721158",
+    "relevance": 1
+  },
+  {
+    "query_id": "883915",
+    "doc_id": "1491488",
+    "relevance": 1
+  },
+  {
+    "query_id": "883915",
+    "doc_id": "1491484",
+    "relevance": 1
+  },
+  {
+    "query_id": "883915",
+    "doc_id": "2599310",
+    "relevance": 1
+  },
+  {
+    "query_id": "883915",
+    "doc_id": "8721157",
+    "relevance": 2
+  },
+  {
+    "query_id": "883915",
+    "doc_id": "8721159",
+    "relevance": 1
+  },
+  {
+    "query_id": "883915",
+    "doc_id": "8721162",
+    "relevance": 3
+  },
+  {
+    "query_id": "883915",
+    "doc_id": "4887096",
+    "relevance": 1
+  },
+  {
+    "query_id": "883915",
+    "doc_id": "8721160",
+    "relevance": 1
+  },
+  {
+    "query_id": "883915",
+    "doc_id": "8721161",
+    "relevance": 1
   },
   {
     "query_id": "443396",
@@ -10743,6 +11658,196 @@
     "query_id": "443396",
     "doc_id": "8793491",
     "relevance": 1
+  },
+  {
+    "query_id": "1117817",
+    "doc_id": "8086995",
+    "relevance": 0
+  },
+  {
+    "query_id": "1117817",
+    "doc_id": "8086997",
+    "relevance": 0
+  },
+  {
+    "query_id": "1117817",
+    "doc_id": "8086999",
+    "relevance": 0
+  },
+  {
+    "query_id": "1117817",
+    "doc_id": "8087000",
+    "relevance": 0
+  },
+  {
+    "query_id": "1117817",
+    "doc_id": "8086994",
+    "relevance": 0
+  },
+  {
+    "query_id": "1117817",
+    "doc_id": "8087001",
+    "relevance": 0
+  },
+  {
+    "query_id": "1117817",
+    "doc_id": "8086996",
+    "relevance": 2
+  },
+  {
+    "query_id": "1117817",
+    "doc_id": "8086998",
+    "relevance": 2
+  },
+  {
+    "query_id": "1117817",
+    "doc_id": "404099",
+    "relevance": 2
+  },
+  {
+    "query_id": "1117817",
+    "doc_id": "8087002",
+    "relevance": 2
+  },
+  {
+    "query_id": "1049519",
+    "doc_id": "7103",
+    "relevance": 1
+  },
+  {
+    "query_id": "1049519",
+    "doc_id": "7107",
+    "relevance": 0
+  },
+  {
+    "query_id": "1049519",
+    "doc_id": "7108",
+    "relevance": 0
+  },
+  {
+    "query_id": "1049519",
+    "doc_id": "7109",
+    "relevance": 0
+  },
+  {
+    "query_id": "1049519",
+    "doc_id": "7104",
+    "relevance": 0
+  },
+  {
+    "query_id": "1049519",
+    "doc_id": "7110",
+    "relevance": 0
+  },
+  {
+    "query_id": "1049519",
+    "doc_id": "7105",
+    "relevance": 3
+  },
+  {
+    "query_id": "1049519",
+    "doc_id": "7106",
+    "relevance": 0
+  },
+  {
+    "query_id": "1049519",
+    "doc_id": "7111",
+    "relevance": 0
+  },
+  {
+    "query_id": "1049519",
+    "doc_id": "7112",
+    "relevance": 1
+  },
+  {
+    "query_id": "705609",
+    "doc_id": "8466139",
+    "relevance": 3
+  },
+  {
+    "query_id": "705609",
+    "doc_id": "8466140",
+    "relevance": 3
+  },
+  {
+    "query_id": "705609",
+    "doc_id": "8466142",
+    "relevance": 3
+  },
+  {
+    "query_id": "705609",
+    "doc_id": "8466144",
+    "relevance": 3
+  },
+  {
+    "query_id": "705609",
+    "doc_id": "8466141",
+    "relevance": 3
+  },
+  {
+    "query_id": "705609",
+    "doc_id": "8466146",
+    "relevance": 3
+  },
+  {
+    "query_id": "705609",
+    "doc_id": "8466145",
+    "relevance": 3
+  },
+  {
+    "query_id": "705609",
+    "doc_id": "8466138",
+    "relevance": 3
+  },
+  {
+    "query_id": "1108100",
+    "doc_id": "8180313",
+    "relevance": 0
+  },
+  {
+    "query_id": "1108100",
+    "doc_id": "8180314",
+    "relevance": 1
+  },
+  {
+    "query_id": "1108100",
+    "doc_id": "8180315",
+    "relevance": 1
+  },
+  {
+    "query_id": "1108100",
+    "doc_id": "8180316",
+    "relevance": 1
+  },
+  {
+    "query_id": "1108100",
+    "doc_id": "8180317",
+    "relevance": 0
+  },
+  {
+    "query_id": "1108100",
+    "doc_id": "8180321",
+    "relevance": 1
+  },
+  {
+    "query_id": "1108100",
+    "doc_id": "8180312",
+    "relevance": 2
+  },
+  {
+    "query_id": "1108100",
+    "doc_id": "8180318",
+    "relevance": 2
+  },
+  {
+    "query_id": "1108100",
+    "doc_id": "8180319",
+    "relevance": 2
+  },
+  {
+    "query_id": "1108100",
+    "doc_id": "8180320",
+    "relevance": 3
   },
   {
     "query_id": "47923",
@@ -15285,6 +16390,56 @@
     "relevance": 0
   },
   {
+    "query_id": "1136769",
+    "doc_id": "8082041",
+    "relevance": 0
+  },
+  {
+    "query_id": "1136769",
+    "doc_id": "8082042",
+    "relevance": 1
+  },
+  {
+    "query_id": "1136769",
+    "doc_id": "8082043",
+    "relevance": 1
+  },
+  {
+    "query_id": "1136769",
+    "doc_id": "8082044",
+    "relevance": 1
+  },
+  {
+    "query_id": "1136769",
+    "doc_id": "8082045",
+    "relevance": 2
+  },
+  {
+    "query_id": "1136769",
+    "doc_id": "8082046",
+    "relevance": 1
+  },
+  {
+    "query_id": "1136769",
+    "doc_id": "8082047",
+    "relevance": 0
+  },
+  {
+    "query_id": "1136769",
+    "doc_id": "8082048",
+    "relevance": 0
+  },
+  {
+    "query_id": "1136769",
+    "doc_id": "8082049",
+    "relevance": 1
+  },
+  {
+    "query_id": "1136769",
+    "doc_id": "8082050",
+    "relevance": 3
+  },
+  {
     "query_id": "1112341",
     "doc_id": "1035060",
     "relevance": 3
@@ -16398,6 +17553,56 @@
     "query_id": "1112341",
     "doc_id": "943110",
     "relevance": 0
+  },
+  {
+    "query_id": "315637",
+    "doc_id": "8602276",
+    "relevance": 2
+  },
+  {
+    "query_id": "315637",
+    "doc_id": "8602278",
+    "relevance": 2
+  },
+  {
+    "query_id": "315637",
+    "doc_id": "6411884",
+    "relevance": 1
+  },
+  {
+    "query_id": "315637",
+    "doc_id": "3431820",
+    "relevance": 0
+  },
+  {
+    "query_id": "315637",
+    "doc_id": "8602277",
+    "relevance": 0
+  },
+  {
+    "query_id": "315637",
+    "doc_id": "8602279",
+    "relevance": 0
+  },
+  {
+    "query_id": "315637",
+    "doc_id": "8602280",
+    "relevance": 0
+  },
+  {
+    "query_id": "315637",
+    "doc_id": "8602281",
+    "relevance": 0
+  },
+  {
+    "query_id": "315637",
+    "doc_id": "286311",
+    "relevance": 2
+  },
+  {
+    "query_id": "315637",
+    "doc_id": "286306",
+    "relevance": 3
   },
   {
     "query_id": "1103812",
@@ -19922,6 +21127,156 @@
   {
     "query_id": "1105792",
     "doc_id": "996676",
+    "relevance": 0
+  },
+  {
+    "query_id": "273695",
+    "doc_id": "8282603",
+    "relevance": 2
+  },
+  {
+    "query_id": "273695",
+    "doc_id": "8282607",
+    "relevance": 1
+  },
+  {
+    "query_id": "273695",
+    "doc_id": "8282609",
+    "relevance": 0
+  },
+  {
+    "query_id": "273695",
+    "doc_id": "8282606",
+    "relevance": 2
+  },
+  {
+    "query_id": "273695",
+    "doc_id": "8282601",
+    "relevance": 1
+  },
+  {
+    "query_id": "273695",
+    "doc_id": "8282604",
+    "relevance": 2
+  },
+  {
+    "query_id": "273695",
+    "doc_id": "8282608",
+    "relevance": 2
+  },
+  {
+    "query_id": "273695",
+    "doc_id": "8282600",
+    "relevance": 2
+  },
+  {
+    "query_id": "273695",
+    "doc_id": "8282602",
+    "relevance": 2
+  },
+  {
+    "query_id": "273695",
+    "doc_id": "8282605",
+    "relevance": 3
+  },
+  {
+    "query_id": "1103153",
+    "doc_id": "8226436",
+    "relevance": 0
+  },
+  {
+    "query_id": "1103153",
+    "doc_id": "8226437",
+    "relevance": 0
+  },
+  {
+    "query_id": "1103153",
+    "doc_id": "8226438",
+    "relevance": 0
+  },
+  {
+    "query_id": "1103153",
+    "doc_id": "8226439",
+    "relevance": 0
+  },
+  {
+    "query_id": "1103153",
+    "doc_id": "8226443",
+    "relevance": 3
+  },
+  {
+    "query_id": "1103153",
+    "doc_id": "8226440",
+    "relevance": 0
+  },
+  {
+    "query_id": "1103153",
+    "doc_id": "8226441",
+    "relevance": 0
+  },
+  {
+    "query_id": "1103153",
+    "doc_id": "8226442",
+    "relevance": 0
+  },
+  {
+    "query_id": "1103153",
+    "doc_id": "8226444",
+    "relevance": 3
+  },
+  {
+    "query_id": "1103153",
+    "doc_id": "8226445",
+    "relevance": 0
+  },
+  {
+    "query_id": "1056416",
+    "doc_id": "155824",
+    "relevance": 0
+  },
+  {
+    "query_id": "1056416",
+    "doc_id": "8739201",
+    "relevance": 2
+  },
+  {
+    "query_id": "1056416",
+    "doc_id": "8739203",
+    "relevance": 0
+  },
+  {
+    "query_id": "1056416",
+    "doc_id": "8739202",
+    "relevance": 3
+  },
+  {
+    "query_id": "1056416",
+    "doc_id": "8739204",
+    "relevance": 1
+  },
+  {
+    "query_id": "1056416",
+    "doc_id": "8739205",
+    "relevance": 0
+  },
+  {
+    "query_id": "1056416",
+    "doc_id": "8739206",
+    "relevance": 1
+  },
+  {
+    "query_id": "1056416",
+    "doc_id": "8739208",
+    "relevance": 0
+  },
+  {
+    "query_id": "1056416",
+    "doc_id": "8739209",
+    "relevance": 1
+  },
+  {
+    "query_id": "1056416",
+    "doc_id": "8739207",
     "relevance": 0
   }
 ]

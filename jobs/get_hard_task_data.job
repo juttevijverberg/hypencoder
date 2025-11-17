@@ -14,11 +14,11 @@ module load Anaconda3/2023.07-2
 
 source activate hype
 
-# python scripts/get_data_hard_tasks.py --data FollowIR_test --dest_path "data/FollowIR/test" 
+python scripts/get_data_hard_tasks.py --data FollowIR_test --dest_path "data/FollowIR/test" 
 # python scripts/get_data_hard_tasks.py --data FollowIR_train --dest_path "data/FollowIR/train"
 # python scripts/get_data_hard_tasks.py --data TOT_test --dest_path "data/TOT/test"
 # python scripts/get_data_hard_tasks.py --data TOT_train --dest_path "data/TOT/train"
-# python scripts/get_data_hard_tasks.py --data DL_HARD_test --dest_path "data/DL_HARD/test"
+#python scripts/get_data_hard_tasks.py --data DL_HARD_test --dest_path "data/DL_HARD/test"
 
 # python -c "import json,sys;print(len(json.load(open('/home/scur1744/hypencoder/data/DL_HARD/subset/queries.json'))))"
 # 21
