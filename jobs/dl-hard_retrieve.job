@@ -15,7 +15,7 @@ module load Anaconda3/2023.07-2
 source activate hype
 
 export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"             
-export ENCODING_PATH="$HOME/hypencoder/encoded_items/"     
+export ENCODING_PATH="$HOME/hypencoder/encoded_items/msmarco-passage-dev"     
 export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/dl-hard_50"
 mkdir -p "$RETRIEVAL_DIR"
 
@@ -23,7 +23,7 @@ python hypencoder_cb/inference/retrieve.py \
 --model_name_or_path=$MODEL_NAME_OR_PATH \
 --encoded_item_path=$ENCODING_PATH \
 --output_dir=$RETRIEVAL_DIR \
---ir_dataset_name=" msmarco-passage/trec-dl-hard" \
+--ir_dataset_name="msmarco-passage/trec-dl-hard" \
 --metric_names='ndcg@10,RR,ndcg@1000'
 
 export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/dl-hard_21"
@@ -37,4 +37,4 @@ python hypencoder_cb/inference/retrieve.py \
 --qrel_json "$HOME/hypencoder/data_tmp/qrels.json" \
 --query_id_key "query_id"\
 --query_text_key "text"\
---metric_names='ndcg@10,RR,ndcg@1000'
+--metric_names= ndcg@10 RR ndcg@1000
