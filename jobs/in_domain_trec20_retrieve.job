@@ -5,8 +5,8 @@
 #SBATCH --job-name=in_domain_retrieve
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
-#SBATCH --time=00:01:00
-#SBATCH --output=outputs/run_retrieve_%A.out
+#SBATCH --time=14:00:00
+#SBATCH --output=outputs/trec20_retrieve_%A.out
 
 module purge
 module load 2023
@@ -16,10 +16,9 @@ source activate hype
 
 export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"
 export ENCODING_PATH="$HOME/hypencoder/encoded_items/trec-dl-2020"
-mkdir -p "$ENCODING_PATH"
-
 export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/trec-dl-2020"
 mkdir -p "$RETRIEVAL_DIR"
+export IR_DATASET_NAME="msmarco-passage/trec-dl-2020/judged"
 
 python hypencoder_cb/inference/retrieve.py \
 --model_name_or_path=$MODEL_NAME_OR_PATH \
