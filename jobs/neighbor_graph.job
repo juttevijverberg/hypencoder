@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=run_neighbor_graph
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=00:10:00
+#SBATCH --output=outputs/run_neighbor_graph_%A.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype
+
+export ENCODING_PATH="$HOME/hypencoder/encoded_items/fiqa"  # "$HOME/hypencoder/encoded_items/trec-dl-2019"
+export ITEM_NEIGHBOR_GRAPH="$HOME/hypencoder/neighbor_graph/fiqa_neighbor_graph.jsonl"     # "$HOME/hypencoder/neighbor_graph/trec-dl-2019"
+mkdir -p "$ENCODING_PATH"
+
+python hypencoder_cb/inference/neighbor_graph.py \
+--encoded_items_path=$ENCODING_PATH \
+--output_path=$ITEM_NEIGHBOR_GRAPH \
+--batch_size=100 \
+--top_k=100
