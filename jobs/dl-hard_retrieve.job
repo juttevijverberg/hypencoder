@@ -23,8 +23,7 @@ python hypencoder_cb/inference/retrieve.py \
 --model_name_or_path=$MODEL_NAME_OR_PATH \
 --encoded_item_path=$ENCODING_PATH \
 --output_dir=$RETRIEVAL_DIR \
---ir_dataset_name="msmarco-passage/trec-dl-hard" \
---metric_names="nDCG@10,RR,nDCG@1000"
+--ir_dataset_name="msmarco-passage/trec-dl-hard"
 
 export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/dl-hard_21"
 mkdir -p "$RETRIEVAL_DIR"
@@ -33,7 +32,7 @@ python hypencoder_cb/inference/retrieve.py \
 --model_name_or_path=$MODEL_NAME_OR_PATH \
 --encoded_item_path=$ENCODING_PATH \
 --output_dir=$RETRIEVAL_DIR \
---query_jsonl "$HOME/hypencoder/data_tmp/queries.json" \
---qrel_json "$HOME/hypencoder/data_tmp/qrels.json" \
+--query_jsonl "$HOME/hypencoder/data/DL_HARD/test/queries.jsonl" \
+--qrel_json "$HOME/hypencoder/data/DL_HARD/test/qrels.json" \
 --query_id_key "query_id"\
 --query_text_key "text"

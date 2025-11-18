@@ -172,14 +172,75 @@ def download_dl_hard_test(dest_path):
     base = Path(dest_path)
     base.mkdir(parents=True, exist_ok=True)
 
+    qrels = [
+        {"query_id": r.query_id, "doc_id": r.doc_id, "relevance": r.relevance}
+        for r in ds.qrels_iter()
+    ]
+
+    url = (
+        "https://raw.githubusercontent.com/grill-lab/DL-Hard/"
+        "2be6435c2b1f8131dfa23f3c0dee72f9dd47d849/"
+        "annotations/new_judgements/new_judgements-passage.passage-level.qrels"
+    )
+    resp = requests.get(url)
+    resp.raise_for_status()
+
+    new_qrels_set = set()
+    for line in resp.text.splitlines():
+        q, _, d, _ = line.split()
+        new_qrels_set.add((q, d))
+
+    qrels_half = [
+        r
+        for r in qrels
+        if (str(r["query_id"]), str(r["doc_id"])) not in new_qrels_set
+    ]
+
+    with open(base / "qrels.json", "w", encoding="utf-8") as f:
+        merged = _convert_qrels_list_to_merged(qrels_half)
+        json.dump(merged, f, ensure_ascii=False, indent=2)
+
+    keep_query_ids = {r["query_id"] for r in qrels_half}
+
+    with open(base / "queries.jsonl", "w", encoding="utf-8") as f:
+        for q in ds.queries_iter():
+            if q.query_id in keep_query_ids:
+                obj = {"query_id": q.query_id, "text": q.text}
+                f.write(json.dumps(obj, ensure_ascii=False) + "\n")
+
+    print(f"✅ Finished saving TREC DL Hard queries and qrels to {base}")
+
+def download_dl_hard_test1(dest_path):
+    """
+    Save queries and qrels for msmarco-passage/trec-dl-hard to dest_path.
+    (Corpus is intentionally skipped due to its very large size.)
+    """
+    ds = ir_datasets.load("msmarco-passage/trec-dl-hard")
+    base = Path(dest_path)
+    base.mkdir(parents=True, exist_ok=True)
+
     with open(base / "queries.jsonl", "w", encoding="utf-8") as f:
         for q in ds.queries_iter():
             obj = {"query_id": q.query_id, "text": q.text}
             f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
     qrels = [{"query_id": r.query_id, "doc_id": r.doc_id, "relevance": r.relevance} for r in ds.qrels_iter()]
+    
+    pt.init()
+    url = "https://raw.githubusercontent.com/grill-lab/DL-Hard/2be6435c2b1f8131dfa23f3c0dee72f9dd47d849/annotations/new_judgements/new_judgements-passage.passage-level.qrels"
+    new_qrels = pt.io.read_qrels(url)
+    new_qrels_set = set()
+
+    with open("new_qrels.qrels") as f:
+        for line in f:
+            q, _, d, _ = line.strip().split()
+            new_qrels_set.add((q, d))
+
+    qrels_half = [r for r in qrels if (str(r["query_id"]), str(r["doc_id"])) not in new_qrels_set]
     with open(base / "qrels.json", "w", encoding="utf-8") as f:
-        json.dump(qrels, f, ensure_ascii=False, indent=2)
+        merged = _convert_qrels_list_to_merged(qrels_half)
+        json.dump(merged, f, ensure_ascii=False, indent=2)
+    
 
     print(f"✅ Finished saving TREC DL Hard queries and qrels to {base}")
 
