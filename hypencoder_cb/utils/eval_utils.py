@@ -181,3 +181,60 @@ def pretty_print_standard_format(
                 f.write("-" * 80)
                 f.write("\n")
                 f.write("\n")
+
+
+def compute_p_mrr(
+    orig_run: Dict[str, Dict[str, Number]],
+    new_run: Dict[str, Dict[str, Number]],
+    qrels: Dict[str, Dict[str, Number]],
+    scale_100: bool = True,
+) -> float:
+    """
+    Computes the paired-Mean Reciprocal Rank (p-MRR) using ir_measures.
+    This metric compares the MRR of a new run to an original run on a per-query basis.
+
+    Args:
+        orig_run: The original run, mapping qid -> {doc_id: score}.
+        new_run: The new run, mapping qid -> {doc_id: score}.
+        qrels: The ground truth relevance judgements, mapping qid -> {doc_id: relevance}.
+        scale_100: Whether to scale the final result by 100.
+
+    Returns:
+        The p-MRR score.
+    """
+    mrr_measure = ir_measures.MRR
+
+    # Calculate per-query MRR for both runs
+    og_mrr_scores = {
+        m.query_id: m.value for m in ir_measures.iter_calc([mrr_measure], qrels, orig_run)
+    }
+    new_mrr_scores = {
+        m.query_id: m.value for m in ir_measures.iter_calc([mrr_measure], qrels, new_run)
+    }
+
+    per_query_p_mrr = []
+
+    # Iterate over all queries in the qrels to ensure we consider all of them
+    for qid in qrels.keys():
+        mrr_og = og_mrr_scores.get(qid, 0.0)
+        mrr_new = new_mrr_scores.get(qid, 0.0)
+
+        # If both MRRs are 0, there's no change to score
+        if mrr_og == 0.0 and mrr_new == 0.0:
+            score = 0.0
+        # If the new run is better (higher MRR)
+        elif mrr_new > mrr_og:
+            # This corresponds to the R_og > R_new case for ranks
+            score = (mrr_og / mrr_new) - 1.0 if mrr_new > 0 else -1.0
+        else: # mrr_new <= mrr_og (worse or same)
+            score = 1.0 - (mrr_new / mrr_og) if mrr_og > 0 else 1.0
+
+        per_query_p_mrr.append(score)
+
+    if not per_query_p_mrr:
+        return 0.0
+
+    # Average over all queries in qrels
+    p_mrr = sum(per_query_p_mrr) / len(qrels)
+    return p_mrr * 100.0 if scale_100 else p_mrr
+

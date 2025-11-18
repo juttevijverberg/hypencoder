@@ -149,17 +149,20 @@ def download_tot_test(dest_path):
     base = Path(dest_path)
     base.mkdir(parents=True, exist_ok=True)
 
-    q_data = [{"query_id": q.query_id, "text": q.text} for q in ds.queries_iter()]
-    with open(base / "queries.json", "w", encoding="utf-8") as f:
-        json.dump(q_data, f, ensure_ascii=False, indent=2)
+    with open(base / "queries.jsonl", "w", encoding="utf-8") as f:
+        for q in ds.queries_iter():
+            obj = {"query_id": str(q.query_id), "text": q.text}
+            f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
-    d_data = [{"doc_id": d.doc_id, "text": d.text} for d in ds.docs_iter()]
-    with open(base / "corpus.json", "w", encoding="utf-8") as f:
-        json.dump(d_data, f, ensure_ascii=False, indent=2)
+    with open(base / "corpus.jsonl", "w", encoding="utf-8") as f:
+    for d in ds.docs_iter():
+        obj = {"doc_id": str(d.doc_id), "text": d.text}
+        f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
     qrels_data = [{"query_id": qrel.query_id, "doc_id": qrel.doc_id, "relevance": qrel.relevance} for qrel in ds.qrels_iter()]
     with open(base / "qrels.json", "w", encoding="utf-8") as f:
-        json.dump(qrels_data, f, ensure_ascii=False, indent=2)
+        merged = _convert_qrels_list_to_merged(qrels_data)
+        json.dump(merged, f, ensure_ascii=False, indent=2)
 
     print(f"✅ Finished saving TOT docs, queries and qrels to {base}")
 
