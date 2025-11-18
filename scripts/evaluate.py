@@ -123,9 +123,7 @@ def do_eval_multiple_runs(
 
     # 3. Calculate p-MRR if requested
     if should_calc_p_mrr:
-        # We assume the set of "changed docs" for p-MRR are all docs in the qrels.
-        changed_docs = {qid: list(doc_map.keys()) for qid, doc_map in original_qrels.items()}
-        p_mrr = compute_p_mrr(original_run, new_run, changed_docs)
+        p_mrr = compute_p_mrr(original_run, new_run, original_qrels, new_qrels)
         all_metrics["p_mrr"] = p_mrr
         print("--- p-MRR (vs original qrels) ---")
         print(f"{p_mrr:.2f}")

@@ -2,11 +2,11 @@
 
 #SBATCH --partition=gpu_mig
 #SBATCH --gpus=1
-#SBATCH --job-name=evaluate
+#SBATCH --job-name=follow-ir_p-mrr
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
 #SBATCH --time=00:05:00
-#SBATCH --output=outputs/evaluate.out
+#SBATCH --output=outputs/follow-ir_p-mrr.out
 
 module purge
 module load 2023
