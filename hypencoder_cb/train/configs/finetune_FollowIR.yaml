@@ -19,17 +19,18 @@ model_config: # Reproducibility Study (RS): Model config from read me, with adde
   loss_type: # RS: For fine-tuning, we only have cross-entropy loss.
     - cross_entropy
   loss_kwargs:
-    - {}
-    - {"use_in_batch_negatives": true, "only_use_first_item": true}
+    - {"use_in_batch_negatives": true, "only_use_first_item": false}
 data_config:
-  training_data_jsonl: .../hypencoder/data/train.jsonl # RS: Todo; Change pathname
+  training_data_jsonl: data/FollowIR/train/converted_train.jsonl
   validation_data_jsonl: null
-  positive_filter_type: first  # Assuming that the first item is the positive
+  positive_filter_type: type
+  positive_filter_kwargs:
+    positive_type: positive
   num_positives_to_sample: 1
-  num_negatives_to_sample: 8 # Change the number of negatives to sample based on how many you have
+  num_negatives_to_sample: 1 # Change the number of negatives to sample based on how many you have
 trainer_config: # RS: Training config of hard negatives
   hf_trainer_config:
-    output_dir: .../hypencoder/hypencoder.contrastive_learning.hard_negative
+    output_dir: outputs/hypencoder.contrastive_learning.hard_negative
     overwrite_output_dir: false
     remove_unused_columns: false
     evaluation_strategy: 'no'
@@ -41,13 +42,13 @@ trainer_config: # RS: Training config of hard negatives
     dataloader_persistent_workers: false
     learning_rate: 8.0e-06 #RS: changed 2.0e-05 to 8.0e-06
     weight_decay: 0.0
-    num_train_epochs: 25 # RS: Changed 1 to 25
+    num_train_epochs: 1
     lr_scheduler_type: constant_with_warmup
     warmup_ratio: 1.0e-01 #RS: changed 0.0 to 1.0e-01
     warmup_steps: 6000
     logging_strategy: steps
     logging_steps: 10
-    max_steps: 3300 # RS: Changed 1000000 to 3300
+    max_steps: 10000 # RS: Changed 1000000 to 3300
     save_strategy: steps
     save_steps: 2500
     save_total_limit: null
