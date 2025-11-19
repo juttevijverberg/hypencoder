@@ -10,7 +10,7 @@ from hypencoder_cb.utils.data_utils import (
 )
 from hypencoder_cb.utils.eval_utils import (
     calculate_metrics,
-    compute_p_mrr,
+    compute_followir_p_mrr,
     load_standard_format_as_run,
     pretty_print_standard_format,
 )
@@ -123,7 +123,7 @@ def do_eval_multiple_runs(
 
     # 3. Calculate p-MRR if requested
     if should_calc_p_mrr:
-        p_mrr = compute_p_mrr(original_run, new_run, original_qrels, new_qrels)
+        p_mrr = compute_followir_p_mrr(original_run, new_run, original_qrels, new_qrels)
         all_metrics["p_mrr"] = p_mrr
         print("--- p-MRR (vs original qrels) ---")
         print(f"{p_mrr:.2f}")
