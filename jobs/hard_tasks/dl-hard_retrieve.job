@@ -34,5 +34,5 @@ python hypencoder_cb/inference/retrieve.py \
 --output_dir=$RETRIEVAL_DIR \
 --query_jsonl "$HOME/hypencoder/data/DL_HARD/test/queries.jsonl" \
 --qrel_json "$HOME/hypencoder/data/DL_HARD/test/qrels.json" \
---query_id_key "query_id"\
+--query_id_key "query_id" \
 --query_text_key "text"

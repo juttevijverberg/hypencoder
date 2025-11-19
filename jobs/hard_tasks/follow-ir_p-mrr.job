@@ -1,0 +1,46 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_mig
+#SBATCH --gpus=1
+#SBATCH --job-name=follow-ir_p-mrr
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=00:05:00
+#SBATCH --output=outputs/follow-ir_p-mrr.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype
+
+export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"
+unset IR_DATASET_NAME
+
+for data in robust04 core17; do
+    export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/${data}"
+    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/${data}"
+    mkdir -p "$RETRIEVAL_DIR"
+
+    python scripts/evaluate.py \
+    --original_run_path="$HOME/hypencoder/retrieval_outputs/follow-ir/${data}/og/retrieved_items.jsonl" \
+    --new_run_path="$HOME/hypencoder/retrieval_outputs/follow-ir/${data}/changed/retrieved_items.jsonl" \
+    --output_dir=$RETRIEVAL_DIR \
+    --original_qrel_json="$HOME/hypencoder/data/FollowIR/test/${data}/qrels_og.json" \
+    --new_qrel_json="$HOME/hypencoder/data/FollowIR/test/${data}/qrels_changed.json" \
+    --metric_names='("AP", "p-MRR")'
+done
+
+export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/news21"
+export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/news21"
+mkdir -p "$RETRIEVAL_DIR"
+
+python scripts/evaluate.py \
+--original_run_path="$HOME/hypencoder/retrieval_outputs/follow-ir/news21/og/retrieved_items.jsonl" \
+--new_run_path="$HOME/hypencoder/retrieval_outputs/follow-ir/news21/changed/retrieved_items.jsonl" \
+--output_dir=$RETRIEVAL_DIR \
+--original_qrel_json="$HOME/hypencoder/data/FollowIR/test/news21/qrels_og.json" \
+--new_qrel_json="$HOME/hypencoder/data/FollowIR/test/news21/qrels_changed.json" \
+--metric_names='("nDCG@5", "p-MRR")'
+
+

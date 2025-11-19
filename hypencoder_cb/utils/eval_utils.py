@@ -181,3 +181,98 @@ def pretty_print_standard_format(
                 f.write("-" * 80)
                 f.write("\n")
                 f.write("\n")
+
+
+def compute_p_mrr(
+    orig_run: Dict[str, Dict[str, Number]],
+    new_run: Dict[str, Dict[str, Number]],
+    orig_qrels: Dict[str, Dict[str, Number]],
+    new_qrels: Dict[str, Dict[str, Number]],
+    scale_100: bool = False,
+) -> float:
+    """
+    Computes p-MRR as defined in the paper:
+
+    For each query:
+      - compute MRR_og and MRR_new,
+      - for each *changed relevant document* d:
+          p-MRR(d,q) = MRR_og/MRR_new - 1       if R_og > R_new
+                     = 1 - MRR_new/MRR_og       otherwise
+      - average p-MRR(d,q) over changed relevant docs in that query.
+    Finally, macro-average over queries.
+    """
+    mrr_measure = ir_measures.MRR
+
+    og_mrr_scores = {
+        m.query_id: m.value
+        for m in ir_measures.iter_calc([mrr_measure], orig_qrels, orig_run)
+    }
+    new_mrr_scores = {
+        m.query_id: m.value
+        for m in ir_measures.iter_calc([mrr_measure], new_qrels, new_run)
+    }
+
+    per_query_p_mrr = []
+
+    # consider all queries that have any qrels
+    all_qids = set(orig_qrels.keys()) | set(new_qrels.keys())
+
+    for qid in all_qids:
+        mrr_og = og_mrr_scores.get(qid, 0.0)
+        mrr_new = new_mrr_scores.get(qid, 0.0)
+
+        # build rankings for this query
+        orig_ranked = sorted(
+            orig_run.get(qid, {}).items(),
+            key=lambda x: x[1],
+            reverse=True,
+        )
+        new_ranked = sorted(
+            new_run.get(qid, {}).items(),
+            key=lambda x: x[1],
+            reverse=True,
+        )
+        orig_ranks = {doc_id: rank + 1 for rank, (doc_id, _) in enumerate(orig_ranked)}
+        new_ranks = {doc_id: rank + 1 for rank, (doc_id, _) in enumerate(new_ranked)}
+
+        # relevant documents (in either qrels)
+        rel_docs = set(orig_qrels.get(qid, {}).keys()) | set(
+            new_qrels.get(qid, {}).keys()
+        )
+
+        query_scores = []
+
+        for doc_id in rel_docs:
+            r_og = orig_ranks.get(doc_id, float("inf"))
+            r_new = new_ranks.get(doc_id, float("inf"))
+
+            # only consider *changed* relevant docs
+            if r_og == r_new:
+                continue
+
+            if r_og > r_new:
+                # new rank is better -> use first branch
+                if mrr_new > 0:
+                    score = (mrr_og / mrr_new) - 1.0
+                else:
+                    # undefined in formula; treat as worst possible change
+                    score = -1.0
+            else:
+                # original rank is better or new is tied/worse -> second branch
+                if mrr_og > 0:
+                    score = 1.0 - (mrr_new / mrr_og)
+                else:
+                    # undefined in formula; treat as best possible change
+                    score = 1.0
+
+            query_scores.append(score)
+
+        if query_scores:
+            per_query_p_mrr.append(sum(query_scores) / len(query_scores))
+
+    if not per_query_p_mrr:
+        print("WARNING: per_query_p_mrr is empty!")
+        return 0.0
+
+    p_mrr = sum(per_query_p_mrr) / len(per_query_p_mrr)
+    return p_mrr * 100.0 if scale_100 else p_mrr

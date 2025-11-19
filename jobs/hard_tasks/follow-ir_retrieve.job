@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_a100
+#SBATCH --partition=gpu_mig
 #SBATCH --gpus=1
 #SBATCH --job-name=follow-ir_retrieve
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
-#SBATCH --time=01:00:00
+#SBATCH --time=00:10:00
 #SBATCH --output=outputs/follow-ir_retrieve.out
 
 module purge
@@ -17,8 +17,8 @@ source activate hype
 export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"
 unset IR_DATASET_NAME
 
-for data in robust04 news21 core17; do
-    for type in og changed; do
+for type in og changed; do
+    for data in robust04 core17; do
         export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/${data}"
         export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/${data}/${type}"
         mkdir -p "$RETRIEVAL_DIR"
@@ -30,8 +30,24 @@ for data in robust04 news21 core17; do
         --query_jsonl="$HOME/hypencoder/data/FollowIR/test/${data}/queries.jsonl" \
         --qrel_json="$HOME/hypencoder/data/FollowIR/test/${data}/qrels_${type}.json" \
         --query_id_key="_id" \
-        --query_text_key="text"
+        --query_text_key="instruction_${type}" \
+        --metric_names='("AP", "RR")'
     done
+    export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/news21"
+    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/news21/${type}"
+    mkdir -p "$RETRIEVAL_DIR"
+
+    python hypencoder_cb/inference/retrieve.py \
+    --model_name_or_path=$MODEL_NAME_OR_PATH \
+    --encoded_item_path=$ENCODING_PATH \
+    --output_dir=$RETRIEVAL_DIR \
+    --query_jsonl="$HOME/hypencoder/data/FollowIR/test/news21/queries.jsonl" \
+    --qrel_json="$HOME/hypencoder/data/FollowIR/test/news21/qrels_${type}.json" \
+    --query_id_key="_id" \
+    --query_text_key="instruction_${type}" \
+    --metric_names='("nDCG@5", "RR")'
 done
+
+
 
 

@@ -169,3 +169,4 @@ cython_debug/
 /node_modules
 /encoded_items
 /.ir_datasets
+/neighbor_graph
