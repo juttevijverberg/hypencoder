@@ -87,13 +87,13 @@ def create_item_graph_with_item_embedding_search(
                 item_ids[offset : offset + top_indices.shape[0]]
             ):
                 neighbor_indices = top_indices[i]
+                print("neighbor_indices: ", neighbor_indices.shape)
+                print(neighbor_indices)
 
                 neighbors = [
-                    item_ids[neighbor_index]
-                    for neighbor_index in neighbor_indices
-                    if neighbor_index != offset + i
-                ]
-
+                    item_ids[neighbor_index] for neighbor_index in neighbor_indices if neighbor_index != offset + i     # neighbor_index != i
+                ]     
+                
                 writer.write(
                     {
                         "item_id": item_id,
