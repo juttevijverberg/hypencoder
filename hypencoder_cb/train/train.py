@@ -120,7 +120,7 @@ def get_collator(
 ):
     return GeneralDualEncoderCollator(
         tokenizer=tokenizer,
-        num_negatives_to_sample=data_config.num_items_to_sample,
+        num_negatives_to_sample=data_config.num_negatives_to_sample,
         positive_filter=data_config.positive_filter_type,
         positive_filter_kwargs=data_config.positive_filter_kwargs,
         positive_sampler="random",

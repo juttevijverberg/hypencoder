@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_mig
+#SBATCH --gpus=1
+#SBATCH --job-name=tot_tokenize
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=01:00:00
+#SBATCH --output=outputs/tot_tokenize.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype
+
+python hypencoder_cb/utils/tokenizer_utils.py \
+    --standard_format_jsonl="$HOME/hypencoder/data/TOT/train/converted_train.jsonl" \
+    --output_file="$HOME/hypencoder/data/TOT/train/tokenized_train.jsonl" \
+    --tokenizer="google-bert/bert-base-uncased" \
+    --add_special_tokens=True \
+    --query_max_length=512 \
+    --item_max_length=512

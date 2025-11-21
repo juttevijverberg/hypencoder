@@ -1,5 +1,4 @@
-# To do: change max document en query length.
-model_config: # Reproducibility Study (RS): Model config from read me, with added checkpoint path
+model_config:
   checkpoint_path: jfkback/hypencoder.6_layer
   tokenizer_pretrained_model_name_or_path: google-bert/bert-base-uncased
   query_encoder_kwargs:
@@ -16,35 +15,34 @@ model_config: # Reproducibility Study (RS): Model config from read me, with adde
     freeze_transformer: false
     pooling_type: cls
   shared_encoder: true
-  loss_type: # RS: For fine-tuning, we only have cross-entropy loss.
+  loss_type:
     - cross_entropy
   loss_kwargs:
-    - {}
-    - {"use_in_batch_negatives": true, "only_use_first_item": true}
+    - {"use_in_batch_negatives": false, "only_use_first_item": false}
 data_config:
-  training_data_jsonl: .../hypencoder/data/train.jsonl # RS: Todo; Change pathname
+  training_data_jsonl: data/TOT/train/tokenized_train.jsonl
   validation_data_jsonl: null
-  positive_filter_type: first  # Assuming that the first item is the positive
+  positive_filter_type: first  # First item is always the positive
   num_positives_to_sample: 1
-  num_negatives_to_sample: 8 # Change the number of negatives to sample based on how many you have
+  num_negatives_to_sample: 1
 trainer_config: # RS: Training config of hard negatives
   hf_trainer_config:
-    output_dir: .../hypencoder/hypencoder.contrastive_learning.hard_negative
+    output_dir: models/tot/hypencoder.tot
     overwrite_output_dir: false
     remove_unused_columns: false
-    evaluation_strategy: 'no'
-    per_device_train_batch_size: 96 # RS: Changed batch-size from 64 to 96
+    eval_strategy: 'no'
+    per_device_train_batch_size: 96
     per_device_eval_batch_size: 64
     gradient_accumulation_steps: 1
-    dataloader_prefetch_factor: 5
-    dataloader_num_workers: 1
+    dataloader_prefetch_factor: null
+    dataloader_num_workers: 0
     dataloader_persistent_workers: false
     learning_rate: 8.0e-06 #RS: changed 2.0e-05 to 8.0e-06
     weight_decay: 0.0
     num_train_epochs: 25 # RS: Changed 1 to 25
-    lr_scheduler_type: constant_with_warmup
+    lr_scheduler_type: linear
     warmup_ratio: 1.0e-01 #RS: changed 0.0 to 1.0e-01
-    warmup_steps: 6000
+    warmup_steps: 0 # RS: changed 6000 to 0
     logging_strategy: steps
     logging_steps: 10
     max_steps: 3300 # RS: Changed 1000000 to 3300
@@ -58,7 +56,7 @@ trainer_config: # RS: Training config of hard negatives
     run_name: "hypencoder.contrastive_learning.hard_negative"
     disable_tqdm: true
     ddp_find_unused_parameters: true
-    fsdp: false
+    fsdp: ''
     fsdp_config: null
     report_to: none
     push_to_hub: false

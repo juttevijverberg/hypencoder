@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, Optional
 
 import fire
 from omegaconf import OmegaConf
@@ -20,7 +20,7 @@ class HypencoderModelConfig:
 
     checkpoint_path: Optional[str] = None
 
-    model_type: Literal["hypencoder", "biencoder"] = "hypencoder"
+    model_type: str = "hypencoder"
     shared_encoder: bool = False
 
 
@@ -38,7 +38,7 @@ class HypencoderDataConfig:
     positive_filter_type: str = "first"
     positive_filter_kwargs: Optional[Dict[str, Any]] = None
 
-    label_key: Optional[str] = "score"
+    label_key: Optional[str] = None
 
     num_positives_to_sample: int = 1
     num_negatives_to_sample: int = 7
@@ -50,7 +50,6 @@ class HFTrainerConfig:
     overwrite_output_dir: bool = False
     remove_unused_columns: bool = False
 
-    evaluation_strategy: str = "no"
     eval_strategy: str = "no"
     eval_steps: int = 500
 
@@ -90,7 +89,7 @@ class HFTrainerConfig:
 
     ddp_find_unused_parameters: Optional[bool] = True
     # str or bool string options are: "full_shard", "auto_wrap", ...
-    fsdp: Any = False
+    fsdp: str = ""
     fsdp_config: Optional[Dict[str, Any]] = None
 
     report_to: str = "none"
@@ -116,13 +115,18 @@ class HypencoderTrainerConfig:
 
 @dataclass
 class HypencoderTrainingConfig:
-    model_config = HypencoderModelConfig(
+    model_config: HypencoderModelConfig = field(
+        default_factory=HypencoderModelConfig
     )
-    data_config = HypencoderDataConfig(
-        training_data_jsonl="",
+    data_config: HypencoderDataConfig = field(
+        default_factory=lambda: HypencoderDataConfig(
+            training_data_jsonl="",
+        )
     )
-    trainer_config = HypencoderTrainerConfig(
-        hf_trainer_config=HFTrainerConfig(),
+    trainer_config: HypencoderTrainerConfig = field(
+        default_factory=lambda: HypencoderTrainerConfig(
+            hf_trainer_config=HFTrainerConfig(),
+        )
     )
 
 

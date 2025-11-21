@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_h100
+#SBATCH --gpus=4
+#SBATCH --job-name=follow-ir_finetune
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=36
+#SBATCH --time=03:00:00
+#SBATCH --output=outputs/follow-ir_finetune.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype
+
+# Generate a random unused port for multi-GPU communication
+export MASTER_PORT=$((RANDOM + 10000))
+export MASTER_ADDR=127.0.0.1
+
+# Multi-GPU training with 4 H100s
+torchrun --nproc_per_node=4 \
+  --master_port=${MASTER_PORT} \
+  hypencoder_cb/train/train.py hypencoder_cb/train/configs/finetune_FollowIR.yaml

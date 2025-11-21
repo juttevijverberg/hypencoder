@@ -19,8 +19,8 @@ unset IR_DATASET_NAME
 
 for type in og changed; do
     for data in robust04 core17; do
-        export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/${data}"
-        export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/${data}/${type}"
+        export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/zeroshot/${data}"
+        export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/zeroshot/${data}/${type}"
         mkdir -p "$RETRIEVAL_DIR"
 
         python hypencoder_cb/inference/retrieve.py \
@@ -33,8 +33,8 @@ for type in og changed; do
         --query_text_key="instruction_${type}" \
         --metric_names='("AP", "RR")'
     done
-    export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/news21"
-    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/news21/${type}"
+    export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/zeroshot/news21"
+    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/zeroshot/news21/${type}"
     mkdir -p "$RETRIEVAL_DIR"
 
     python hypencoder_cb/inference/retrieve.py \
