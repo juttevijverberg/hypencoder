@@ -155,9 +155,9 @@ def download_tot_test(dest_path):
             f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
     with open(base / "corpus.jsonl", "w", encoding="utf-8") as f:
-    for d in ds.docs_iter():
-        obj = {"doc_id": str(d.doc_id), "text": d.text}
-        f.write(json.dumps(obj, ensure_ascii=False) + "\n")
+        for d in ds.docs_iter():
+            obj = {"doc_id": str(d.doc_id), "text": d.text}
+            f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
     qrels_data = [{"query_id": qrel.query_id, "doc_id": qrel.doc_id, "relevance": qrel.relevance} for qrel in ds.qrels_iter()]
     with open(base / "qrels.json", "w", encoding="utf-8") as f:
@@ -247,9 +247,30 @@ def download_dl_hard_test1(dest_path):
 
     print(f"✅ Finished saving TREC DL Hard queries and qrels to {base}")
 
+def download_msmarco_qrels(dest_path):
+    for path_name in [
+        "msmarco-passage/trec-dl-2019/judged",
+        "msmarco-passage/trec-dl-2020/judged",
+        "msmarco-passage/dev/small"
+    ]:
+        ds = ir_datasets.load(path_name)
+        
+        # Create subdirectory for each dataset
+        dataset_name = path_name.replace("/", "_").replace("-", "_")
+        base = Path(dest_path) / dataset_name
+        base.mkdir(parents=True, exist_ok=True)
+
+        qrels_data = [{"query_id": qrel.query_id, "doc_id": qrel.doc_id, "relevance": qrel.relevance} for qrel in ds.qrels_iter()]
+        with open(base / "qrels.json", "w", encoding="utf-8") as f:
+            merged = _convert_qrels_list_to_merged(qrels_data)
+            json.dump(merged, f, ensure_ascii=False, indent=2)
+
+        print(f"✅ Finished saving {path_name} qrels to {base}")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data", choices=["FollowIR_test", "TOT_test", "FollowIR_train", "TOT_train", "DL_HARD_test"], required=True,
+    parser.add_argument("--data", choices=["FollowIR_test", "TOT_test", "FollowIR_train", "TOT_train", "DL_HARD_test", "MSMARCO_qrels"], required=True,
                         help="Select dataset type to download")
     parser.add_argument("--dest_path", required=True,
                         help="Full destination folder (e.g., data/TOT/test)")
@@ -265,3 +286,6 @@ if __name__ == "__main__":
         download_tot_train(args.dest_path)
     elif args.data == "DL_HARD_test":
         download_dl_hard_test(args.dest_path)
+    elif args.data == "MSMARCO_qrels":
+        download_msmarco_qrels(args.dest_path)
+

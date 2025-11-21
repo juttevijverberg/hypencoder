@@ -35,7 +35,7 @@ def embedding_search(
             similarity = -torch.cdist(batch, item_embeddings, p=2)   # similarity is calculated between batch and all items, so batch is not nCandidates
         elif distance == "ip":
             similarity = batch @ item_embeddings.T
-        top_indices = torch.topk(similarity, top_k, dim=1).indices.cpu()
+        top_indices = torch.topk(similarity, top_k, dim=1).indices.cpu()        # Shape: (batch size, top_k)
 
         yield (top_indices, batch_offset)
         batch_offset += batch.shape[0]
@@ -86,13 +86,13 @@ def create_item_graph_with_item_embedding_search(
             for i, item_id in enumerate(
                 item_ids[offset : offset + top_indices.shape[0]]
             ):
-                neighbor_indices = top_indices[i]
+                neighbor_indices = top_indices[i]       # neighbors for i-th item in the batch
                 print("neighbor_indices: ", neighbor_indices.shape)
                 print(neighbor_indices)
-
+                    
                 neighbors = [
                     item_ids[neighbor_index] for neighbor_index in neighbor_indices if neighbor_index != offset + i     # neighbor_index != i
-                ]     
+                ]
                 
                 writer.write(
                     {
