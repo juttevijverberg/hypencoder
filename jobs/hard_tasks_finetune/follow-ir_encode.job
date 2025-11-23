@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_a100
+#SBATCH --partition=gpu_h100
 #SBATCH --gpus=1
 #SBATCH --job-name=follow-ir_encode
 #SBATCH --ntasks=1
@@ -14,10 +14,10 @@ module load Anaconda3/2023.07-2
 
 source activate hype
 
-export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer" 
+export MODEL_NAME_OR_PATH="models/hypencoder.followir/checkpoint-2553" 
 
 for data in robust04 news21 core17; do
-    export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/${data}"
+    export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/finetune/${data}"
     mkdir -p "$ENCODING_PATH"
 
     python hypencoder_cb/inference/encode.py \

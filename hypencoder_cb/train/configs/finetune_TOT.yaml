@@ -18,7 +18,7 @@ model_config:
   loss_type:
     - cross_entropy
   loss_kwargs:
-    - {"use_in_batch_negatives": false, "only_use_first_item": false}
+    - {"use_in_batch_negatives": true, "only_use_first_item": false}
 data_config:
   training_data_jsonl: data/TOT/train/tokenized_train.jsonl
   validation_data_jsonl: null
@@ -45,9 +45,9 @@ trainer_config: # RS: Training config of hard negatives
     warmup_steps: 0 # RS: changed 6000 to 0
     logging_strategy: steps
     logging_steps: 10
-    max_steps: 3300 # RS: Changed 1000000 to 3300
+    max_steps: -1 # RS: Changed 1000000 to 3300
     save_strategy: steps
-    save_steps: 2500
+    save_steps: 3300
     save_total_limit: null
     save_only_model: false
     bf16: true

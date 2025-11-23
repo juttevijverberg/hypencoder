@@ -302,12 +302,14 @@ class HypencoderCrossEntropyLoss(CrossEntropyLoss):
     def __init__(
         self,
         use_query_embedding_representation: bool = False,
+        use_cross_device_negatives: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.use_query_embedding_representation = (
             use_query_embedding_representation
         )
+        self.use_cross_device_negatives = use_cross_device_negatives
 
     def _get_similarity(
         self,
