@@ -12,7 +12,8 @@ import ir_datasets
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
 from tqdm import tqdm
-
+import time
+from hypencoder_cb.inference.neighbor_graph import get_embeddings
 
 def encode_corpus(model: SentenceTransformer, corpus: List[Dict], batch_size: int = 64):
     """Encode all documents in the corpus."""
@@ -50,6 +51,8 @@ def retrieve(query_embeddings, doc_embeddings, doc_ids, top_k: int = 1000):
     """Retrieve top-k documents for each query using cosine similarity."""
     print(f"Computing similarities and retrieving top-{top_k} documents per query...")
     
+    start_time = time.time()
+    
     results = {}
     for i, query_emb in enumerate(tqdm(query_embeddings)):
         # Compute cosine similarity
@@ -60,7 +63,10 @@ def retrieve(query_embeddings, doc_embeddings, doc_ids, top_k: int = 1000):
         
         # Store results
         results[i] = [(doc_ids[idx], float(scores[idx])) for idx in top_indices]
-    
+
+    end_time = time.time()
+    print(f"TAS-B retrieval time elapsed: {end_time - start_time:.5f} seconds.\n Average per query: {(end_time - start_time)/len(query_embeddings):.5f} seconds.")
+
     return results
 
 
@@ -113,6 +119,12 @@ def main():
         help="Directory to save results"
     )
     parser.add_argument(
+        "--encoded_items_path",
+        type=str,
+        default=None,
+        help="Path to pre-encoded data, default None so encoded at runtime"
+    )
+    parser.add_argument(
         "--top_k",
         type=int,
         default=1000,
@@ -146,7 +158,7 @@ def main():
     # Load dataset
     print(f"Loading dataset: {args.ir_dataset_name}")
     dataset = ir_datasets.load(args.ir_dataset_name)
-    
+
     # Encode corpus
     corpus = list(dataset.docs_iter())
     doc_ids, doc_embeddings = encode_corpus(model, corpus, args.batch_size)

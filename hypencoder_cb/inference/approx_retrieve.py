@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Union
 import fire
 import torch
 # from numpy import copy
+import sys
 import copy
 from tqdm import tqdm
 from transformers import AutoTokenizer
@@ -404,4 +405,9 @@ def do_retrieval(
 
 
 if __name__ == "__main__":
+    
+    print("Command line arguments (sys.argv):")
+    for i, arg in enumerate(sys.argv):
+        print(f"  [{i}] {arg}")
+
     fire.Fire(do_retrieval)
