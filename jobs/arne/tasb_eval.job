@@ -2,23 +2,25 @@
 
 #SBATCH --partition=gpu_h100
 #SBATCH --gpus=1
-#SBATCH --job-name=tasb_trec20
+#SBATCH --job-name=tasb_trec19
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=27
 #SBATCH --mem=250G
 #SBATCH --time=04:00:00
-#SBATCH --output=outputs/tasb_trec20_%A.out
+#SBATCH --output=outputs/arne/tasb_trec19_%A.out
 
 module purge
 module load 2023
 module load Anaconda3/2023.07-2
 
 source activate hype
+conda remove faiss-gpu
+# conda install -c pytorch faiss-gpu
 
 export MODEL_NAME_OR_PATH="sentence-transformers/msmarco-distilbert-base-tas-b"
 export ENCODING_PATH="$HOME/hypencoder/encoded_items/trec-dl-2019"                # "$HOME/hypencoder/encoded_items/msmarco-passage-dev"
-export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/TASB/trec-dl-2020"       # "$HOME/hypencoder/retrieval_outputs/msmarco-passage-dev"
-export IR_DATASET_NAME="msmarco-passage/trec-dl-2020/judged"                      # "trec-tot/2023/dev"
+export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/TASB/trec-dl-2019"       # "$HOME/hypencoder/retrieval_outputs/msmarco-passage-dev"
+export IR_DATASET_NAME="msmarco-passage/trec-dl-2019/judged"                      # "trec-tot/2023/dev"
 mkdir -p "$RETRIEVAL_DIR"
 
 python scripts/evaluate_tasb.py \
@@ -27,4 +29,5 @@ python scripts/evaluate_tasb.py \
   --ir_dataset_name=$IR_DATASET_NAME \
   --output_dir=$RETRIEVAL_DIR \
   --top_k=1000 \
-  --batch_size=64 
+  --batch_size=64 \ 
+  --retrieve_faiss=True

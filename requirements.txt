@@ -14,3 +14,11 @@ ir_measures
 # Training
 omegaconf
 datasets
+
+# Query variation generators
+git+https://github.com/Guzpenha/query_variation_generators.git
+textattack
+tensorflow
+tensorflow_hub
+IPython
+pandas

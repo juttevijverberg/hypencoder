@@ -10,7 +10,7 @@ from typing import Dict, List
 
 import ir_datasets
 import numpy as np
-from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 import time
 from hypencoder_cb.inference.neighbor_graph import get_embeddings
@@ -49,9 +49,11 @@ def encode_queries(model: SentenceTransformer, queries: List[Dict], batch_size: 
 
 def retrieve(query_embeddings, doc_embeddings, doc_ids, top_k: int = 1000):
     """Retrieve top-k documents for each query using cosine similarity."""
+    from sentence_transformers import util
+
     print(f"Computing similarities and retrieving top-{top_k} documents per query...")
     
-    start_time = time.time()
+    # start_time = time.time()
     
     results = {}
     for i, query_emb in enumerate(tqdm(query_embeddings)):
@@ -64,10 +66,66 @@ def retrieve(query_embeddings, doc_embeddings, doc_ids, top_k: int = 1000):
         # Store results
         results[i] = [(doc_ids[idx], float(scores[idx])) for idx in top_indices]
 
-    end_time = time.time()
-    print(f"TAS-B retrieval time elapsed: {end_time - start_time:.5f} seconds.\n Average per query: {(end_time - start_time)/len(query_embeddings):.5f} seconds.")
+    # end_time = time.time()
+    # print(f"TAS-B retrieval time elapsed: {end_time - start_time:.5f} seconds.\n Average per query: {(end_time - start_time)/len(query_embeddings):.5f} seconds.")
 
     return results
+
+# Convert to numpy float32
+def to_numpy_float32(x):
+    if hasattr(x, "cpu"):
+        x = x.cpu().numpy()
+    x = np.asarray(x, dtype=np.float32)
+    # faiss wants C-contiguous arrays
+    return np.ascontiguousarray(x)
+
+def retrieve_faiss(query_embeddings, doc_embeddings, doc_ids, top_k: int = 1000):
+    """
+    Retrieve top-k documents for each query using Faiss (cosine similarity).
+    - query_embeddings: (nq, d) numpy array or torch tensor
+    - doc_embeddings:   (nd, d) numpy array or torch tensor
+    - doc_ids:          (nd,) array-like of integer ids (will be cast to int64)
+    Returns: dict mapping query_idx -> list[(doc_id, score), ...]
+    """
+    import faiss
+    print(f"Computing similarities with Faiss and retrieving top-{top_k} documents per query...")
+    queries = to_numpy_float32(query_embeddings)
+    docs = to_numpy_float32(doc_embeddings)
+    ids = np.asarray(doc_ids, dtype=np.int64)
+
+    # Normalize vectors for cosine similarity (cosine(a,b) = dot(normalized(a), normalized(b)))
+    faiss.normalize_L2(docs)
+    faiss.normalize_L2(queries)
+
+    d = docs.shape[1]
+
+    # Build index: exact inner-product search (which equals cosine for normalized vectors)
+    index = faiss.IndexFlatIP(d)          # exact search; fast for moderate sizes
+    index = faiss.IndexIDMap(index)       # to add custom IDs
+    index.add_with_ids(docs, ids)         # add vectors + stable ids
+
+    # Search (batched). Faiss can search multiple queries at once:
+    start_time = time.time()
+    D, I = index.search(queries, top_k)   # D: scores (inner products), I: doc ids (or -1)
+    end_time = time.time()
+
+    print(f"TAS-B Faiss retrieval time elapsed: {end_time - start_time:.4f} seconds."
+          f" Avg per query: {(end_time - start_time)/len(queries):.4f} seconds.")
+
+    # Build results dict to match your original output
+    results = {}
+    for q_idx in range(queries.shape[0]):
+        row_ids = I[q_idx].tolist()
+        row_scores = D[q_idx].tolist()
+        pairs = []
+        for doc_id, score in zip(row_ids, row_scores):
+            if int(doc_id) == -1:
+                continue
+            pairs.append((int(doc_id), float(score)))
+        results[q_idx] = pairs
+
+    return results
+
 
 
 def evaluate_with_ir_measures(
@@ -142,6 +200,12 @@ def main():
         default=["nDCG@10", "RR", "nDCG@1000", "R@1000", "AP", "nDCG@5"],
         help="Metrics to calculate"
     )
+    parser.add_argument(
+        "--retrieve_faiss",
+        type=bool,
+        default=False,
+        help="Use the retrieval with Faiss. Default False."
+    )
     
     args = parser.parse_args()
     
@@ -168,7 +232,10 @@ def main():
     query_ids, query_embeddings = encode_queries(model, queries, args.batch_size)
     
     # Retrieve
-    results = retrieve(query_embeddings, doc_embeddings, doc_ids, args.top_k)
+    if arg.retrieve_faiss:
+        results = retrieve_faiss(query_embeddings, doc_embeddings, doc_ids, args.top_k)
+    else:
+        results = retrieve(query_embeddings, doc_embeddings, doc_ids, args.top_k)
     
     # Save retrieval results in TREC format
     output_file = output_dir / "retrieved_items.txt"
