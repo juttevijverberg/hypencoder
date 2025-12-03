@@ -213,40 +213,6 @@ def download_dl_hard_test(dest_path):
 
     print(f"✅ Finished saving TREC DL Hard queries and qrels to {base}")
 
-def download_dl_hard_test1(dest_path):
-    """
-    Save queries and qrels for msmarco-passage/trec-dl-hard to dest_path.
-    (Corpus is intentionally skipped due to its very large size.)
-    """
-    ds = ir_datasets.load("msmarco-passage/trec-dl-hard")
-    base = Path(dest_path)
-    base.mkdir(parents=True, exist_ok=True)
-
-    with open(base / "queries.jsonl", "w", encoding="utf-8") as f:
-        for q in ds.queries_iter():
-            obj = {"query_id": q.query_id, "text": q.text}
-            f.write(json.dumps(obj, ensure_ascii=False) + "\n")
-
-    qrels = [{"query_id": r.query_id, "doc_id": r.doc_id, "relevance": r.relevance} for r in ds.qrels_iter()]
-    
-    pt.init()
-    url = "https://raw.githubusercontent.com/grill-lab/DL-Hard/2be6435c2b1f8131dfa23f3c0dee72f9dd47d849/annotations/new_judgements/new_judgements-passage.passage-level.qrels"
-    new_qrels = pt.io.read_qrels(url)
-    new_qrels_set = set()
-
-    with open("new_qrels.qrels") as f:
-        for line in f:
-            q, _, d, _ = line.strip().split()
-            new_qrels_set.add((q, d))
-
-    qrels_half = [r for r in qrels if (str(r["query_id"]), str(r["doc_id"])) not in new_qrels_set]
-    with open(base / "qrels.json", "w", encoding="utf-8") as f:
-        merged = _convert_qrels_list_to_merged(qrels_half)
-        json.dump(merged, f, ensure_ascii=False, indent=2)
-    
-
-    print(f"✅ Finished saving TREC DL Hard queries and qrels to {base}")
-
 def download_msmarco_qrels(dest_path):
     for path_name in [
         "msmarco-passage/trec-dl-2019/judged",
@@ -267,14 +233,52 @@ def download_msmarco_qrels(dest_path):
 
         print(f"✅ Finished saving {path_name} qrels to {base}")
 
+def get_train_data(dest_path):
+    print("📥 Loading dataset from HuggingFace...", flush=True)
+    ds = load_dataset("jfkback/hypencoder-msmarco-training-dataset")
+    train_data = ds["train"]
+    print(f"✅ Loaded dataset with {len(train_data):,} total examples", flush=True)
+    
+    print(f"💾 Writing {len(train_data):,} examples to JSON (fast manual method)...", flush=True)
+    with open(dest_path, 'w', encoding='utf-8') as f:
+        for i, example in enumerate(train_data):
+            f.write(json.dumps(example, ensure_ascii=False) + '\n')
+            if (i + 1) % 10000 == 0:
+                print(f"  Written {i + 1:,}/{len(train_data):,} examples...", end='\r', flush=True)
+    print(f"\n✅ Saved {len(train_data):,} examples to {dest_path}", flush=True)
+
+def get_subset_train_data(dest_path, max_samples=None):
+    print("📥 Loading dataset from HuggingFace...", flush=True)
+    ds = load_dataset("jfkback/hypencoder-msmarco-training-dataset")
+    train_data = ds["train"]
+    print(f"✅ Loaded dataset with {len(train_data):,} total examples", flush=True)
+    
+    if max_samples is not None:
+        # Shuffle first to get random samples, then select
+        print(f"🔀 Shuffling and selecting {max_samples:,} samples...", flush=True)
+        train_data = train_data.shuffle(seed=42).select(range(min(max_samples, len(train_data))))
+        print(f"📊 Randomly selected {len(train_data):,} samples", flush=True)
+    
+    # Fast manual JSON writing (avoids slow HF to_json)
+    print(f"💾 Writing {len(train_data):,} examples to {dest_path}...", flush=True)
+    with open(dest_path, 'w', encoding='utf-8') as f:
+        for i, example in enumerate(train_data):
+            f.write(json.dumps(example, ensure_ascii=False) + '\n')
+            if (i + 1) % 1000 == 0:
+                print(f"  Written {i + 1:,}/{len(train_data):,} examples...", end='\r', flush=True)
+    print(f"\n✅ Saved {len(train_data):,} examples to {dest_path}", flush=True)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data", choices=["FollowIR_test", "TOT_test", "FollowIR_train", "TOT_train", "DL_HARD_test", "MSMARCO_qrels"], required=True,
+    parser.add_argument("--data", choices=["FollowIR_test", "TOT_test", "FollowIR_train", "TOT_train", "DL_HARD_test", "MSMARCO_qrels", "train_data", "subset_train_data"], required=True,
                         help="Select dataset type to download")
     parser.add_argument("--dest_path", required=True,
                         help="Full destination folder (e.g., data/TOT/test)")
     args = parser.parse_args()
+
+    path = Path(args.dest_path)
+    path.mkdir(parents=True, exist_ok=True)
 
     if args.data == "FollowIR_test":
         download_followir_test(args.dest_path)
@@ -288,4 +292,8 @@ if __name__ == "__main__":
         download_dl_hard_test(args.dest_path)
     elif args.data == "MSMARCO_qrels":
         download_msmarco_qrels(args.dest_path)
+    elif args.data == "train_data":
+        get_train_data(args.dest_path)
+    elif args.data == "subset_train_data":
+        get_subset_train_data(args.dest_path, max_samples=50000)
 

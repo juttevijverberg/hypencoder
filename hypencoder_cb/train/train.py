@@ -1,5 +1,6 @@
 import os
 from typing import Optional
+import torch
 
 import fire
 from datasets import load_dataset
@@ -39,23 +40,59 @@ def load_model(model_config: HypencoderModelConfig):
     config_cls = config_cls_lookup[model_config.model_type]
     model_cls = model_cls_lookup[model_config.model_type]
 
-    config = config_cls(
-        query_encoder_kwargs=OmegaConf.to_container(
-            model_config.query_encoder_kwargs
-        ),
-        passage_encoder_kwargs=OmegaConf.to_container(
-            model_config.passage_encoder_kwargs
-        ),
-        loss_type=OmegaConf.to_container(model_config.loss_type),
-        loss_kwargs=OmegaConf.to_container(model_config.loss_kwargs),
-        shared_encoder=model_config.shared_encoder,
-    )
-
     if model_config.checkpoint_path is not None:
-        model = model_cls.from_pretrained(
-            model_config.checkpoint_path, config=config
-        )
+        # Load the checkpoint with its original config to preserve hyperhead weights
+        print(f"Loading checkpoint from {model_config.checkpoint_path}")
+        model = model_cls.from_pretrained(model_config.checkpoint_path)
+        
+        # Replace transformer with TAS-B if model_name_or_path differs from checkpoint
+        from transformers import AutoModel
+        new_query_model_path = model_config.query_encoder_kwargs.get('model_name_or_path')
+        new_passage_model_path = model_config.passage_encoder_kwargs.get('model_name_or_path')
+        
+        if new_query_model_path and new_query_model_path != model.query_encoder.transformer.config._name_or_path:
+            print(f"Replacing query transformer: {model.query_encoder.transformer.config._name_or_path} -> {new_query_model_path}")
+            model.query_encoder.transformer = AutoModel.from_pretrained(new_query_model_path)
+            
+        if new_passage_model_path and new_passage_model_path != model.passage_encoder.transformer.config._name_or_path:
+            print(f"Replacing passage transformer: {model.passage_encoder.transformer.config._name_or_path} -> {new_passage_model_path}")
+            model.passage_encoder.transformer = AutoModel.from_pretrained(new_passage_model_path)
+            
+        # If shared encoder, make sure they point to the same transformer
+        if model_config.shared_encoder:
+            model.passage_encoder.transformer = model.query_encoder.transformer
+            
+        # Update config with new settings (loss, freezing, etc.) but keep the loaded hyperhead
+        # Convert OmegaConf objects to plain Python objects for JSON serialization
+        model.config.loss_type = OmegaConf.to_container(model_config.loss_type, resolve=True)
+        model.config.loss_kwargs = OmegaConf.to_container(model_config.loss_kwargs, resolve=True)
+        model._get_similarity_loss(model.config)
+        # Reinitialize the forward kwargs list to match the new loss functions
+        model.similarity_loss_forward_kwargs = [
+            {} for _ in range(len(model.similarity_losses))
+        ]
+        
+        # Update freezing settings
+        freeze_transformer = model_config.query_encoder_kwargs.get('freeze_transformer', False)
+        for param in model.query_encoder.transformer.parameters():
+            param.requires_grad = not freeze_transformer
+        if not model_config.shared_encoder:
+            freeze_passage = model_config.passage_encoder_kwargs.get('freeze_transformer', False)
+            for param in model.passage_encoder.transformer.parameters():
+                param.requires_grad = not freeze_passage
     else:
+        # Create new model from scratch
+        config = config_cls(
+            query_encoder_kwargs=OmegaConf.to_container(
+                model_config.query_encoder_kwargs
+            ),
+            passage_encoder_kwargs=OmegaConf.to_container(
+                model_config.passage_encoder_kwargs
+            ),
+            loss_type=OmegaConf.to_container(model_config.loss_type),
+            loss_kwargs=OmegaConf.to_container(model_config.loss_kwargs),
+            shared_encoder=model_config.shared_encoder,
+        )
         model = model_cls(config)
 
     return model

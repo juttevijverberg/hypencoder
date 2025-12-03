@@ -81,7 +81,7 @@ def no_in_batch_negatives_hypecoder_similarity(
     item_embeddings = item_embeddings.view(
         num_queries, num_items_per_query, item_emb_dim
     )
-
+    
     similarity = query_models(item_embeddings).squeeze()
 
     return similarity
@@ -163,9 +163,10 @@ class SimilarityAndLossBase(nn.Module):
 
 
 class MarginMSELoss(SimilarityAndLossBase):
-    def __init__(self, **kwargs):
+    def __init__(self, normalization_fn=None, **kwargs):
         super().__init__(**kwargs)
         self.loss = nn.MSELoss()
+        self.normalization_fn = normalization_fn if normalization_fn is not None else (lambda x: x)
 
     def _get_similarity(
         self,
@@ -197,7 +198,9 @@ class MarginMSELoss(SimilarityAndLossBase):
         margin = similarity[:, 0] - similarity[:, 1]
         teacher_margin = labels[:, 0] - labels[:, 1]
 
-        return self.loss(margin.squeeze(), teacher_margin.squeeze())
+        loss_result = self.loss(margin.squeeze(), teacher_margin.squeeze())
+
+        return loss_result
 
 
 class CrossEntropyLoss(SimilarityAndLossBase):

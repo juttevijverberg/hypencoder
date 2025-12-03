@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=tasb_encode
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=14:00:00
+#SBATCH --output=outputs/tasb_encode.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype
+
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/tasb/checkpoint-2500"        # from huggingface using from_pretrained
+export ENCODING_PATH="$HOME/hypencoder/encoded_items/tasb/msmarco-passage-dev"    # path to save encoded items
+export PYTHONUNBUFFERED=1
+mkdir -p "$ENCODING_PATH"
+
+srun python -u hypencoder_cb/inference/encode.py \
+  --model_name_or_path="$MODEL_NAME_OR_PATH" \
+  --output_path="$ENCODING_PATH" \
+  --ir_dataset_name="msmarco-passage/dev/small"                          # from huggingface, downloaded into .ir_datasets
