@@ -1,11 +1,10 @@
 import os
 from typing import Optional
-import torch
 
 import fire
 from datasets import load_dataset
 from omegaconf import OmegaConf
-from transformers import AutoTokenizer, Trainer, TrainingArguments
+from transformers import AutoTokenizer, Trainer, TrainingArguments, AutoModel
 
 from hypencoder_cb.modeling.hypencoder import (
     HypencoderDualEncoder,
@@ -44,44 +43,48 @@ def load_model(model_config: HypencoderModelConfig):
         # Load the checkpoint with its original config to preserve hyperhead weights
         print(f"Loading checkpoint from {model_config.checkpoint_path}")
         model = model_cls.from_pretrained(model_config.checkpoint_path)
-        
-        # Replace transformer with TAS-B if model_name_or_path differs from checkpoint
-        from transformers import AutoModel
-        new_query_model_path = model_config.query_encoder_kwargs.get('model_name_or_path')
-        new_passage_model_path = model_config.passage_encoder_kwargs.get('model_name_or_path')
-        
-        if new_query_model_path and new_query_model_path != model.query_encoder.transformer.config._name_or_path:
-            print(f"Replacing query transformer: {model.query_encoder.transformer.config._name_or_path} -> {new_query_model_path}")
-            model.query_encoder.transformer = AutoModel.from_pretrained(new_query_model_path)
-            
-        if new_passage_model_path and new_passage_model_path != model.passage_encoder.transformer.config._name_or_path:
-            print(f"Replacing passage transformer: {model.passage_encoder.transformer.config._name_or_path} -> {new_passage_model_path}")
-            model.passage_encoder.transformer = AutoModel.from_pretrained(new_passage_model_path)
-            
-        # If shared encoder, make sure they point to the same transformer
+
+        # 1. Replace transformers if needed
+        encoders_to_check = [("query_encoder", model_config.query_encoder_kwargs)]
+        if not model_config.shared_encoder:
+            encoders_to_check.append(("passage_encoder", model_config.passage_encoder_kwargs))
+
+        for enc_name, enc_kwargs in encoders_to_check:
+            encoder = getattr(model, enc_name)
+            new_path = enc_kwargs.get('model_name_or_path')
+            if new_path and new_path != encoder.transformer.config._name_or_path:
+                print(f"Replacing {enc_name} transformer: {encoder.transformer.config._name_or_path} -> {new_path}")
+                encoder.transformer = AutoModel.from_pretrained(new_path)
+                encoder.config.model_name_or_path = new_path
+                getattr(model.config, f"{enc_name}_kwargs")['model_name_or_path'] = new_path
+
+        # 2. Handle shared encoder
         if model_config.shared_encoder:
             model.passage_encoder.transformer = model.query_encoder.transformer
-            
-        # Update config with new settings (loss, freezing, etc.) but keep the loaded hyperhead
-        # Convert OmegaConf objects to plain Python objects for JSON serialization
+            model.config.passage_encoder_kwargs['model_name_or_path'] = model.config.query_encoder_kwargs['model_name_or_path']
+            model.passage_encoder.config.model_name_or_path = model.query_encoder.config.model_name_or_path
+
+        # 3. Update general config & loss
+        model.config.shared_encoder = model_config.shared_encoder
         model.config.loss_type = OmegaConf.to_container(model_config.loss_type, resolve=True)
         model.config.loss_kwargs = OmegaConf.to_container(model_config.loss_kwargs, resolve=True)
         model._get_similarity_loss(model.config)
-        # Reinitialize the forward kwargs list to match the new loss functions
-        model.similarity_loss_forward_kwargs = [
-            {} for _ in range(len(model.similarity_losses))
-        ]
-        
-        # Update freezing settings
-        freeze_transformer = model_config.query_encoder_kwargs.get('freeze_transformer', False)
+        model.similarity_loss_forward_kwargs = [{} for _ in range(len(model.similarity_losses))]
+
+        # 4. Update freezing settings
+        freeze_q = model_config.query_encoder_kwargs.get('freeze_transformer', False)
+        model.config.query_encoder_kwargs['freeze_transformer'] = freeze_q
         for param in model.query_encoder.transformer.parameters():
-            param.requires_grad = not freeze_transformer
-        if not model_config.shared_encoder:
-            freeze_passage = model_config.passage_encoder_kwargs.get('freeze_transformer', False)
+            param.requires_grad = not freeze_q
+
+        if model_config.shared_encoder:
+             model.config.passage_encoder_kwargs['freeze_transformer'] = freeze_q
+        else:
+            freeze_p = model_config.passage_encoder_kwargs.get('freeze_transformer', False)
+            model.config.passage_encoder_kwargs['freeze_transformer'] = freeze_p
             for param in model.passage_encoder.transformer.parameters():
-                param.requires_grad = not freeze_passage
+                param.requires_grad = not freeze_p
     else:
-        # Create new model from scratch
         config = config_cls(
             query_encoder_kwargs=OmegaConf.to_container(
                 model_config.query_encoder_kwargs

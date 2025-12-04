@@ -50,6 +50,7 @@ class HFTrainerConfig:
     overwrite_output_dir: bool = False
     remove_unused_columns: bool = False
 
+    # evaluation_strategy: str = "no", used in old transformer version
     eval_strategy: str = "no"
     eval_steps: int = 500
 

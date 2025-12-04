@@ -30,7 +30,7 @@ trainer_config: # RS: Training config of hard negatives
     output_dir: models/tot/hypencoder.tot
     overwrite_output_dir: false
     remove_unused_columns: false
-    eval_strategy: 'no'
+    evaluation_strategy: 'no'
     per_device_train_batch_size: 96
     per_device_eval_batch_size: 64
     gradient_accumulation_steps: 1
