@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_mig
+#SBATCH --partition=gpu_h100
 #SBATCH --gpus=1
 #SBATCH --job-name=run_encode
 #SBATCH --ntasks=1
@@ -14,13 +14,7 @@ module load Anaconda3/2023.07-2
 
 source activate hype
 
-# rm -f "$HOME/hypencoder/encoded_items/trec-covid.docs.tmp" "$HOME/hypencoder/encoded_items/trec-covid.docs"
-
-export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"                  # from huggingface using from_pretrained
-export ENCODING_PATH="$HOME/hypencoder/encoded_items/trec-covid"         # path to save encoded items
-mkdir -p "$ENCODING_PATH"
-
 srun python -u hypencoder_cb/inference/encode.py \
-  --model_name_or_path="$MODEL_NAME_OR_PATH" \
-  --output_path="$ENCODING_PATH" \
-  --ir_dataset_name="beir/trec-covid"                          # from huggingface, downloaded into .ir_datasets - webis-touche2020/v2, fiqa/test, dbpedia-entity/test, trec-covid, nfcorpus/test
+  --model_name_or_path="jfkback/hypencoder.6_layer" \
+  --output_path="$HOME/hypencoder/encoded_items/touche" \
+  --ir_dataset_name="beir/webis-touche2020"                                 # from huggingface, downloaded into .ir_datasets - webis-touche2020/v2, fiqa/test, dbpedia-entity/test, trec-covid, nfcorpus/test

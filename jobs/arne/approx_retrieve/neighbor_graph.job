@@ -5,20 +5,20 @@
 #SBATCH --job-name=run_neighbor_graph
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=27
-#SBATCH --time=14:00:00
+#SBATCH --time=02:00:00
 #SBATCH --mem=250G
 #SBATCH --output=outputs/run_neighbor_graph_%A.out
 
-export PYTORCH_ALLOC_CONF=expandable_segments:True
+# export PYTORCH_ALLOC_CONF=expandable_segments:True
 
 module purge
 module load 2023
 module load Anaconda3/2023.07-2
 
-source activate hype-faiss
+source activate hype
 
 python hypencoder_cb/inference/neighbor_graph.py \
---encoded_items_path="$HOME/hypencoder/encoded_items/trec-dl-2019" \
---output_path="$HOME/hypencoder/neighbor_graph/trec-dl-2019_neighbor_graph.jsonl" \
+--encoded_items_path="$HOME/hypencoder/encoded_items/scidocs" \
+--output_path="$HOME/hypencoder/neighbor_graph/scidocs/scidocs_neighbor_graph.jsonl" \
 --batch_size=100 \
 --top_k=100

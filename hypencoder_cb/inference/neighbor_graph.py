@@ -4,6 +4,8 @@ import fire
 import torch
 from tqdm import tqdm
 import time
+from pathlib import Path
+import sys
 
 from hypencoder_cb.inference.shared import load_encoded_items_from_disk
 from hypencoder_cb.utils.iterator_utils import batchify_slicing
@@ -67,6 +69,9 @@ def create_item_graph_with_item_embedding_search(
         distance (str, optional): The distance metric to use. Options are
             "l2" or "ip". Defaults to "l2".
     """
+    output_file = Path(output_path)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    
     start = time.time()
 
     if isinstance(dtype, str):
@@ -83,18 +88,14 @@ def create_item_graph_with_item_embedding_search(
         batch_size=batch_size,
         top_k=top_k,
         distance=distance,
-    )
-    t2 = time.time()
-    print(f"Computed nearest neighbors in {t2 - start:.5f} seconds.")
-
-    with JsonlWriter(output_path) as writer:
+    ) # This function returns almost instantly, no latency here (.02 ms)
+    
+    with JsonlWriter(output_file) as writer:
         for top_indices, offset in top_indices_iter:
             for i, item_id in enumerate(
                 item_ids[offset : offset + top_indices.shape[0]]
             ):
                 neighbor_indices = top_indices[i]       # neighbors for i-th item in the batch
-                print("neighbor_indices: ", neighbor_indices.shape)
-                print(neighbor_indices)
                     
                 neighbors = [
                     item_ids[neighbor_index] for neighbor_index in neighbor_indices if neighbor_index != offset + i     # neighbor_index != i
@@ -108,7 +109,12 @@ def create_item_graph_with_item_embedding_search(
                 )
     
     end = time.time()
-    print(f"Total time to construct neighbor graph: {end - start:.5}) seconds.")
+    print(f"Total time to construct neighbor graph: {end - start:.5f} seconds.")
 
 if __name__ == "__main__":
+
+    print("Command-line arguments:")
+    for arg in sys.argv:
+        print(arg)
+    
     fire.Fire(create_item_graph_with_item_embedding_search)
