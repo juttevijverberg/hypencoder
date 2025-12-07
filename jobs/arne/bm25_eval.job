@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_h100
+#SBATCH --gpus=1
+#SBATCH --job-name=tasb_trec19
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=27
+#SBATCH --mem=250G
+#SBATCH --time=04:00:00
+#SBATCH --output=outputs/arne/tasb_trec19_%A.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype-faiss
+# conda install -c pytorch faiss-gpu
+# pip install rank-bm25
+            
+python scripts/evaluate_bm25.py \
+  --ir_dataset_name="msmarco-passage/trec-dl-2019/judged" \
+  --output_dir="$HOME/hypencoder/retrieval_outputs/TASB/bm25/trec-dl-2019" \
+  --top_k=1000

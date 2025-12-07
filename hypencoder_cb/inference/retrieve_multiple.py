@@ -29,6 +29,7 @@ def do_retrieval_multiple(
     do_eval: bool = True,
     metric_names: Optional[List[str]] = None,
     ignore_same_id: bool = False,
+    model_type: str = "hypencoder",
 ) -> None:
     """Does retrieval for multiple attack types using the same loaded index.
 
@@ -57,8 +58,17 @@ def do_retrieval_multiple(
     print(f"Initializing retriever with model: {model_name_or_path}")
     print(f"Loading encoded items from: {encoded_item_path}")
     
+    # Choose retriever class based on model type
+    if model_type == "biencoder":
+        from hypencoder_cb.inference.retrieve_biencoder import BiEncoderRetriever
+        retriever_cls = BiEncoderRetriever
+    elif model_type == "hypencoder":
+        retriever_cls = HypencoderRetriever
+    else:
+        raise ValueError(f"Unknown model_type: {model_type}")
+    
     # Initialize retriever once (loads the index)
-    retriever = HypencoderRetriever(
+    retriever = retriever_cls(
         model_name_or_path=model_name_or_path,
         encoded_item_path=encoded_item_path,
         dtype=dtype,

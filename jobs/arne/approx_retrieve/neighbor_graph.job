@@ -15,14 +15,10 @@ module purge
 module load 2023
 module load Anaconda3/2023.07-2
 
-source activate hype
-
-export ENCODING_PATH="$HOME/hypencoder/encoded_items/trec-dl-2019"
-export ITEM_NEIGHBOR_GRAPH="$HOME/hypencoder/neighbor_graph/trec-dl-2019_neighbor_graph.jsonl"
-mkdir -p "$ENCODING_PATH"
+source activate hype-faiss
 
 python hypencoder_cb/inference/neighbor_graph.py \
---encoded_items_path=$ENCODING_PATH \
---output_path=$ITEM_NEIGHBOR_GRAPH \
+--encoded_items_path="$HOME/hypencoder/encoded_items/trec-dl-2019" \
+--output_path="$HOME/hypencoder/neighbor_graph/trec-dl-2019_neighbor_graph.jsonl" \
 --batch_size=100 \
 --top_k=100

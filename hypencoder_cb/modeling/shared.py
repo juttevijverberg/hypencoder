@@ -5,7 +5,6 @@ import torch
 from transformers import PretrainedConfig, PreTrainedModel
 from transformers.modeling_outputs import ModelOutput
 
-
 @dataclass
 class EncoderOutput(ModelOutput):
     representation: Any
@@ -63,7 +62,7 @@ class BaseDualEncoder(PreTrainedModel):
         ]
 
     def _get_similarity_loss(self, config: BaseDualEncoderConfig):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _get_encoder_losses(
         self,

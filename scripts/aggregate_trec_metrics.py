@@ -52,15 +52,24 @@ def aggregate_metrics(metrics1_path: str, metrics2_path: str, output_path: str):
 
 
 if __name__ == "__main__":
-    # Define paths
-    base_dir = Path(__file__).parent.parent / "retrieval_outputs"
-    
-    metrics1_path = base_dir / "trec-dl-2019" / "metrics" / "aggregated_metrics.json"
-    metrics2_path = base_dir / "trec-dl-2020" / "metrics" / "aggregated_metrics.json"
-    output_path = base_dir / "trec-dl-19-20" / "metrics" / "aggregated_metrics.json"
-    
-    aggregate_metrics(
-        str(metrics1_path),
-        str(metrics2_path),
-        str(output_path)
-    )
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--metrics1_path", type=str, required=False)
+    parser.add_argument("--metrics2_path", type=str, required=False)
+    parser.add_argument("--output_path", type=str, required=False)
+    args = parser.parse_args()
+
+    if args.metrics1_path and args.metrics2_path and args.output_path:
+        aggregate_metrics(args.metrics1_path, args.metrics2_path, args.output_path)
+    else:
+        base_dir = Path(__file__).parent.parent / "retrieval_outputs"
+        metrics1_path = base_dir / "trec-dl-2019" / "metrics" / "aggregated_metrics.json"
+        metrics2_path = base_dir / "trec-dl-2020" / "metrics" / "aggregated_metrics.json"
+        output_path = base_dir / "trec-dl-19-20" / "metrics" / "aggregated_metrics.json"
+
+        aggregate_metrics(
+            str(metrics1_path),
+            str(metrics2_path),
+            str(output_path)
+        )

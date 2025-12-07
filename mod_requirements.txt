@@ -1,24 +1,20 @@
 # Core libraries
 torch
 transformers
-accelerate>=0.26.0
 
 # Encoding & retrieval
 fire
 tqdm
 ir_datasets
 jsonlines
-docarray[proto]
-numpy
+docarray
+numpy<2.0.0
+scipy>=1.11.0
 ir_measures
 
 # Training
 omegaconf
 datasets
-
-# Evaluation
-mteb
-sentence-transformers
 
 # Query variation generators
 git+https://github.com/Guzpenha/query_variation_generators.git

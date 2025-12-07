@@ -3,6 +3,7 @@ from typing import Iterable, List, Tuple, Union
 import fire
 import torch
 from tqdm import tqdm
+import time
 
 from hypencoder_cb.inference.shared import load_encoded_items_from_disk
 from hypencoder_cb.utils.iterator_utils import batchify_slicing
@@ -66,12 +67,15 @@ def create_item_graph_with_item_embedding_search(
         distance (str, optional): The distance metric to use. Options are
             "l2" or "ip". Defaults to "l2".
     """
+    start = time.time()
 
     if isinstance(dtype, str):
         dtype = dtype_lookup(dtype)
 
     item_embeddings, item_ids, _ = get_embeddings(encoded_items_path)
     item_embeddings = item_embeddings.to(device, dtype=dtype)
+    t1 = time.time()
+    print(f"Loaded {len(item_ids)} embeddings to {device} in {t1 - start:.5f} seconds.")
 
     top_indices_iter = embedding_search(
         item_embeddings,
@@ -80,6 +84,8 @@ def create_item_graph_with_item_embedding_search(
         top_k=top_k,
         distance=distance,
     )
+    t2 = time.time()
+    print(f"Computed nearest neighbors in {t2 - start:.5f} seconds.")
 
     with JsonlWriter(output_path) as writer:
         for top_indices, offset in top_indices_iter:
@@ -100,7 +106,9 @@ def create_item_graph_with_item_embedding_search(
                         "neighbors": neighbors,
                     }
                 )
-
+    
+    end = time.time()
+    print(f"Total time to construct neighbor graph: {end - start:.5}) seconds.")
 
 if __name__ == "__main__":
     fire.Fire(create_item_graph_with_item_embedding_search)
