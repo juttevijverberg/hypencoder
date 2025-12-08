@@ -33,6 +33,10 @@ def embedding_search(
     distance: str = "l2",
 ) -> Iterable[Tuple[torch.Tensor, int]]:
     batch_offset = 0
+    
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    
     for batch in tqdm(batchify_slicing(query_embeddings, batch_size)):
         if distance == "l2":
             similarity = -torch.cdist(batch, item_embeddings, p=2)   # similarity is calculated between batch and all items, so batch is not nCandidates
@@ -89,6 +93,8 @@ def create_item_graph_with_item_embedding_search(
         top_k=top_k,
         distance=distance,
     ) # This function returns almost instantly, no latency here (.02 ms)
+    t2 = time.time()
+    print(f"Initialized embedding search iterator in {t2 - t1:.5f} seconds.")
     
     with JsonlWriter(output_file) as writer:
         for top_indices, offset in top_indices_iter:

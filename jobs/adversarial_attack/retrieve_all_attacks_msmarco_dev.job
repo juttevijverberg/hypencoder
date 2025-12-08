@@ -27,7 +27,7 @@ python hypencoder_cb/inference/retrieve_multiple.py \
     --encoded_item_path=$ENCODING_PATH \
     --base_data_dir=$BASE_DATA_DIR \
     --base_output_dir=$BASE_OUTPUT_DIR \
-    --attack_types "['synonym', 'paraphrase', 'naturality', 'mispelling', 'ordering']" \
+    --attack_types "['paraphrase', 'naturality', 'mispelling', 'ordering']" \
     --qrel_json=$QREL_JSON \
     --query_id_key="id" \
     --query_text_key="text" \

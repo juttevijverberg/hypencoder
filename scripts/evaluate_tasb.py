@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
 """
 Evaluate TAS-B model on specified IR dataset using sentence-transformers or BE-base.
 """
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import ir_datasets
 import numpy as np
@@ -14,50 +13,92 @@ import time
 import faiss
 import torch
 import torch.nn.functional as F
-from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import util
 from transformers import AutoModel, AutoTokenizer
+
+# Define a placeholder class/type for the HuggingFace model components
+# This makes the type hints for the encode functions clearer
+class HuggingFaceModel:
+    def __init__(self, model, tokenizer):
+        self.model = model
+        self.tokenizer = tokenizer
+
+def cls_pooling(model_output):
+    """
+    CLS pooling function: Takes the embedding of the [CLS] token (the first token).
+    model_output is the second element of the tuple output from the model.
+    """
+    return model_output[0][:, 0, :]
+
+def encode_texts(
+    texts: List[str],
+    batch_size: int,
+    hf_model: HuggingFaceModel,
+) -> Tuple[np.ndarray, torch.device]:
+    """Encode a list of texts using the Hugging Face model and tokenizer."""
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    hf_model.model.to(device)
+    hf_model.model.eval()
+    
+    embeddings_list = []
+    
+    for i in tqdm(range(0, len(texts), batch_size), desc="Encoding"):
+        batch_texts = texts[i:i + batch_size]
+        
+        # Tokenize the texts
+        encoded_input = hf_model.tokenizer(
+            batch_texts,
+            padding=True,
+            truncation=True,
+            return_tensors='pt',
+            max_length=512 # Set an appropriate max length
+        ).to(device)
+
+        with torch.no_grad():
+            # Get model output (last hidden states)
+            model_output = hf_model.model(**encoded_input)
+            
+            # Perform cls pooling
+            sentence_embeddings = cls_pooling(model_output)
+            
+            # Normalize embeddings and convert to numpy
+            embeddings_list.append(F.normalize(sentence_embeddings, p=2, dim=1).cpu().numpy())
+
+    return np.concatenate(embeddings_list, axis=0), device
 
 def encode_corpus(
     corpus: List[Dict],
     batch_size: int,
-    model: Optional[SentenceTransformer] = None
+    hf_model: HuggingFaceModel, # Changed type hint
 ):
     """Encode all documents in the corpus with the selected backend."""
     texts = [doc.text if hasattr(doc, "text") else doc["text"] for doc in corpus]
     doc_ids = [doc.doc_id if hasattr(doc, "doc_id") else doc["doc_id"] for doc in corpus]
 
     print(f"Encoding {len(texts)} documents...")
-    embeddings = model.encode(texts,
-        batch_size=batch_size,
-        show_progress_bar=True,
-        convert_to_numpy=True,
-    )
+    doc_embeddings, _ = encode_texts(texts, batch_size, hf_model)
     
-    return doc_ids, embeddings
-
+    return doc_ids, doc_embeddings
 
 def encode_queries(
     queries: List[Dict],
     batch_size: int,
-    model: Optional[SentenceTransformer] = None,
+    hf_model: HuggingFaceModel, # Changed type hint
 ):
     """Encode all queries with the selected backend."""
     query_texts = [q.text if hasattr(q, "text") else q["text"] for q in queries]
     query_ids = [q.query_id if hasattr(q, "query_id") else q["query_id"] for q in queries]
 
     print(f"Encoding {len(query_texts)} queries...")
-    embeddings = model.encode(
-        query_texts,
-        batch_size=batch_size,
-        show_progress_bar=True,
-        convert_to_numpy=True,
-    )
+    query_embeddings, _ = encode_texts(query_texts, batch_size, hf_model)
 
-    return query_ids, embeddings
+    return query_ids, query_embeddings
 
 def load_corpus(input_folder: str):
     """
     Load pre-encoded documents (IDs, embeddings, and texts) from a .npz file.
+    DOES NOT WORK ANYMORE
     """
     print(f"Loading pre-encoded documents from: {input_folder}")
     input_file = Path(input_folder) / "encoded_corpus.npz"
@@ -72,6 +113,7 @@ def load_corpus(input_folder: str):
 def load_queries(input_path: str):
     """
     Load pre-encoded queries (IDs and embeddings) from a .npz file.
+    DOES NOT WORK ANYMORE
     """
     print(f"Loading pre-encoded queries from: {input_path}")
     input_file = Path(input_path)
@@ -191,7 +233,7 @@ def main():
     parser.add_argument(
         "--model_name",
         type=str,
-        default="sentence-transformers/msmarco-distilbert-base-tas-b",
+        default="sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco",
         help="Model identifier"
     )
     parser.add_argument(
@@ -253,9 +295,12 @@ def main():
     metrics_dir = output_dir / "metrics"
     metrics_dir.mkdir(exist_ok=True)
     
-    # Load model
+    # Load model and tokenizer using AutoModel/AutoTokenizer
     print(f"Loading model: {args.model_name}")
-    model = SentenceTransformer(args.model_name)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    model = AutoModel.from_pretrained(args.model_name)
+    
+    hf_model = HuggingFaceModel(model, tokenizer)
     
     # Load dataset
     print(f"Loading dataset: {args.ir_dataset_name}")
@@ -269,7 +314,7 @@ def main():
         doc_ids, doc_embeddings = encode_corpus(
             corpus,
             args.batch_size,
-            model=model
+            hf_model=hf_model
         )
     
     # Encode queries
@@ -277,7 +322,7 @@ def main():
     query_ids, query_embeddings = encode_queries(
         queries,
         args.batch_size,
-        model=model
+        hf_model=hf_model # Pass the wrapped model
     )
     
     # Retrieve
