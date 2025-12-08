@@ -30,7 +30,7 @@ data_config:
   num_negatives_to_sample: 7
 trainer_config:
   hf_trainer_config:
-    output_dir: /scratch-shared/scur1744/models/tasb_nofreeze
+    output_dir: /scratch-shared/scur1744/models/tasb_nofreeze2
     overwrite_output_dir: true #Changed
     remove_unused_columns: false
     eval_strategy: 'no'
@@ -40,10 +40,10 @@ trainer_config:
     dataloader_prefetch_factor: 5
     dataloader_num_workers: 8
     dataloader_persistent_workers: false
-    learning_rate: 5e-6 #Changed
+    learning_rate: 1e-5 #Changed 
     weight_decay: 0.01 #Changed
-    num_train_epochs: 1
-    lr_scheduler_type: linear
+    num_train_epochs: 3 #Changed
+    lr_scheduler_type: linear #Changed
     warmup_ratio: 0.1 #changed
     warmup_steps: 0 #Changed
     logging_strategy: steps
