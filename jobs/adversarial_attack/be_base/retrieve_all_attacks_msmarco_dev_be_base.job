@@ -5,7 +5,7 @@
 #SBATCH --job-name=ret_all_attacks_msdev_be
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
-#SBATCH --time=04:00:00
+#SBATCH --time=18:00:00
 #SBATCH --output=outputs/retrieve_all_attacks_msmarco_dev_be_base_%A.out
 
 module purge
@@ -24,7 +24,7 @@ export QREL_JSON="$BASE_DATA_DIR/qrels.json"
 mkdir -p "$(dirname "$BASE_OUTPUT_DIR")"
 
 # Run retrieval for all attacks using a single script execution (loads index once)
-python hypencoder_cb/inference/retrieve_multiple.py \
+python hypencoder_cb/inference/retrieve_bi_encoder_multiple.py \
     --model_name_or_path=$MODEL_NAME_OR_PATH \
     --encoded_item_path=$ENCODING_PATH \
     --base_data_dir=$BASE_DATA_DIR \
