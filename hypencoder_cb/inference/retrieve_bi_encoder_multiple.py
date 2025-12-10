@@ -29,12 +29,14 @@ def do_retrieval_multiple(
     do_eval: bool = True,
     metric_names: Optional[List[str]] = None,
     ignore_same_id: bool = False,
+    pooling_type: str = "cls",
 ) -> None:
     """Does retrieval for multiple attack types using the same loaded index.
 
     Args:
         model_name_or_path (str): Name or path to a TextDualEncoder checkpoint
-            (standard bi-encoder like be_base or TASB).
+            (standard bi-encoder like be_base) or a Hugging Face model ID
+            (like 'sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco').
         encoded_item_path (str): Path to the encoded items.
         base_data_dir (str): Base directory containing subdirectories for each attack type.
         base_output_dir (str): Base directory for outputs.
@@ -51,6 +53,9 @@ def do_retrieval_multiple(
         do_eval (bool, optional): Whether to do evaluation. Defaults to True.
         metric_names (Optional[List[str]], optional): Metrics to compute. Defaults to None.
         ignore_same_id (bool, optional): Ignore same ID. Defaults to False.
+        pooling_type (str, optional): Pooling type for simple transformer
+            models loaded from HuggingFace ("cls" or "mean"). Only used when
+            loading standard HF models, not custom checkpoints. Defaults to "cls".
     """
     
     retriever_kwargs = retriever_kwargs if retriever_kwargs is not None else {}
@@ -66,6 +71,7 @@ def do_retrieval_multiple(
         batch_size=batch_size,
         query_max_length=query_max_length,
         ignore_same_id=ignore_same_id,
+        pooling_type=pooling_type,
         **retriever_kwargs,
     )
     

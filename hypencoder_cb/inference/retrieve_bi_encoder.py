@@ -1,10 +1,11 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Union
+import os
 
 import fire
 import torch
 from tqdm import tqdm
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModel
 
 from hypencoder_cb.inference.shared import (
     BaseRetriever,
@@ -28,6 +29,68 @@ from hypencoder_cb.utils.iterator_utils import batchify_slicing
 from hypencoder_cb.utils.torch_utils import dtype_lookup
 
 
+class SimpleTransformerEncoder(torch.nn.Module):
+    """A simple encoder wrapper for standard Hugging Face transformer models.
+    
+    This is used when loading models directly from Hugging Face (like TASB)
+    rather than custom TextDualEncoder checkpoints.
+    """
+    
+    def __init__(self, model_name_or_path: str, pooling_type: str = "cls"):
+        super().__init__()
+        self.transformer = AutoModel.from_pretrained(model_name_or_path)
+        self.pooling_type = pooling_type
+        
+    def mean_pool(self, last_hidden_state, attention_mask):
+        return last_hidden_state.sum(dim=1) / attention_mask.sum(
+            dim=1, keepdim=True
+        )
+    
+    def cls_pool(self, last_hidden_state, attention_mask):
+        return last_hidden_state[:, 0]
+    
+    def forward(self, input_ids, attention_mask):
+        output = self.transformer(
+            input_ids=input_ids, attention_mask=attention_mask
+        )
+        
+        if self.pooling_type == "mean":
+            pooled = self.mean_pool(output.last_hidden_state, attention_mask)
+        elif self.pooling_type == "cls":
+            pooled = self.cls_pool(output.last_hidden_state, attention_mask)
+        else:
+            raise ValueError(f"Unknown pooling type: {self.pooling_type}")
+        
+        # Return a simple object with representation attribute
+        from types import SimpleNamespace
+        return SimpleNamespace(representation=pooled)
+
+
+def _is_custom_checkpoint(model_path: str) -> bool:
+    """Check if the model path is a custom trained checkpoint or a HF model ID.
+    
+    Args:
+        model_path: Path to model checkpoint or Hugging Face model ID
+        
+    Returns:
+        True if it's a custom checkpoint, False if it's a HF model ID
+    """
+    # If it's a local directory with config.json, check for custom config
+    if os.path.exists(model_path):
+        config_path = os.path.join(model_path, "config.json")
+        if os.path.exists(config_path):
+            import json
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+            # Check if it has our custom architecture markers
+            return "query_encoder_kwargs" in config or "passage_encoder_kwargs" in config
+        return True  # Local path but no config, assume custom
+    
+    # If it contains "/" it might be a HuggingFace model ID (like "org/model")
+    # and doesn't exist locally, so it's not a custom checkpoint
+    return False
+
+
 class BiEncoderRetriever(BaseRetriever):
 
     def __init__(
@@ -40,11 +103,13 @@ class BiEncoderRetriever(BaseRetriever):
         put_all_embeddings_on_device: bool = True,
         query_max_length: int = 32,
         ignore_same_id: bool = False,
+        pooling_type: str = "cls",
     ) -> None:
         """
         Args:
             model_name_or_path (str): Name or path to a TextDualEncoder
-                checkpoint (standard bi-encoder).
+                checkpoint (standard bi-encoder) or a Hugging Face model ID
+                (like 'sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco').
             encoded_item_path (str): Path to the encoded items.
             batch_size (int, optional): Batch sized used for scoring. Defaults
                 to 100,000.
@@ -62,6 +127,9 @@ class BiEncoderRetriever(BaseRetriever):
             ignore_same_id (bool, optional): Whether to ignore retrievals
                 with the same ID as the query. This is only relevant for
                 certain datasets. Defaults to False.
+            pooling_type (str, optional): Pooling type for simple transformer
+                models ("cls" or "mean"). Only used when loading from HF.
+                Defaults to "cls".
         """
         if isinstance(dtype, str):
             dtype = dtype_lookup(dtype)
@@ -74,11 +142,26 @@ class BiEncoderRetriever(BaseRetriever):
         self.ignore_same_id = ignore_same_id
         self.put_on_device = put_all_embeddings_on_device
 
-        self.model = (
-            TextDualEncoder.from_pretrained(model_name_or_path)
-            .to(device, dtype=self.dtype)
-            .eval()
-        )
+        # Detect whether to use custom TextDualEncoder or simple HF model
+        is_custom = _is_custom_checkpoint(model_name_or_path)
+        
+        if is_custom:
+            print(f"Loading custom TextDualEncoder from {model_name_or_path}")
+            self.model = (
+                TextDualEncoder.from_pretrained(model_name_or_path)
+                .to(device, dtype=self.dtype)
+                .eval()
+            )
+            self.query_encoder = self.model.query_encoder
+        else:
+            print(f"Loading standard HuggingFace model from {model_name_or_path}")
+            self.query_encoder = (
+                SimpleTransformerEncoder(model_name_or_path, pooling_type=pooling_type)
+                .to(device, dtype=self.dtype)
+                .eval()
+            )
+            self.model = None
+        
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
 
         print("Started loading encoded items...")
@@ -111,7 +194,7 @@ class BiEncoderRetriever(BaseRetriever):
         ).to(self.device)
 
         with torch.no_grad():
-            query_output = self.model.query_encoder(
+            query_output = self.query_encoder(
                 input_ids=tokenized_query["input_ids"],
                 attention_mask=tokenized_query["attention_mask"],
             )
@@ -361,12 +444,14 @@ def do_retrieval(
     do_eval: bool = True,
     metric_names: Optional[List[str]] = None,
     ignore_same_id: bool = False,
+    pooling_type: str = "cls",
 ) -> None:
     """Does retrieval and optionally evaluation for standard bi-encoder models.
 
     Args:
         model_name_or_path (str): Name or path to a TextDualEncoder
-            checkpoint (standard bi-encoder like be_base or TASB).
+            checkpoint (standard bi-encoder like be_base) or a Hugging Face
+            model ID (like 'sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco').
         encoded_item_path (str): Path to the encoded items.
         output_dir (str): Path to the output directory which will contain the
             retrieval results and optionally the evaluation results.
@@ -405,6 +490,9 @@ def do_retrieval(
         ignore_same_id (bool, optional): Whether to ignore retrievals with the
             same ID as the query. This is only relevant for certain datasets.
             Defaults to False.
+        pooling_type (str, optional): Pooling type for simple transformer
+            models loaded from HuggingFace ("cls" or "mean"). Only used when
+            loading standard HF models, not custom checkpoints. Defaults to "cls".
 
     Raises:
         ValueError: If both `query_jsonl` and `ir_dataset_name` are provided.
@@ -423,6 +511,7 @@ def do_retrieval(
             batch_size=batch_size,
             query_max_length=query_max_length,
             ignore_same_id=ignore_same_id,
+            pooling_type=pooling_type,
             **retriever_kwargs,
         ),
         output_dir=output_dir,

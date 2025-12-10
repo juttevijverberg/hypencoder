@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Aggregate metrics from TREC-DL-2019 and TREC-DL-2020 by averaging them.
+Aggregate metrics from TREC-DL-2019 and TREC-DL-2020 by combining per-query metrics.
 """
 import json
 from pathlib import Path
@@ -8,34 +8,61 @@ from pathlib import Path
 
 def aggregate_metrics(metrics1_path: str, metrics2_path: str, output_path: str):
     """
-    Load two metric JSON files, average corresponding metrics, and save the result.
+    Load two per-query metric JSON files, combine all queries, and compute weighted average.
+    Datasets with more queries will have proportionally more impact on the final aggregated metrics.
     
     Args:
-        metrics1_path: Path to first aggregated_metrics.json
-        metrics2_path: Path to second aggregated_metrics.json
-        output_path: Path to save the averaged metrics
+        metrics1_path: Path to first per_query_metrics.json
+        metrics2_path: Path to second per_query_metrics.json
+        output_path: Path to save the aggregated metrics
     """
-    # Load the two metric files
+    # Load the two per-query metric files
     with open(metrics1_path, 'r') as f:
-        metrics1 = json.load(f)
+        per_query_metrics1 = json.load(f)
     
     with open(metrics2_path, 'r') as f:
-        metrics2 = json.load(f)
+        per_query_metrics2 = json.load(f)
     
-    # Check that both have the same metrics
-    if set(metrics1.keys()) != set(metrics2.keys()):
-        print("Warning: Metric keys don't match!")
-        print(f"Metrics in file 1: {set(metrics1.keys())}")
-        print(f"Metrics in file 2: {set(metrics2.keys())}")
-        print("Will only average common metrics.")
+    num_queries1 = len(per_query_metrics1)
+    num_queries2 = len(per_query_metrics2)
+    total_queries = num_queries1 + num_queries2
     
-    # Average the metrics
+    print(f"Dataset 1: {num_queries1} queries")
+    print(f"Dataset 2: {num_queries2} queries")
+    print(f"Total: {total_queries} queries")
+    
+    # Get all metric names from the first query of each dataset
+    metric_names = set()
+    if per_query_metrics1:
+        first_query1 = next(iter(per_query_metrics1.values()))
+        metric_names.update(first_query1.keys())
+    if per_query_metrics2:
+        first_query2 = next(iter(per_query_metrics2.values()))
+        metric_names.update(first_query2.keys())
+    
+    # Aggregate metrics by summing all query scores and dividing by total queries
     aggregated = {}
-    for metric_name in metrics1.keys():
-        if metric_name in metrics2:
-            aggregated[metric_name] = (metrics1[metric_name] + metrics2[metric_name]) / 2.0
+    for metric_name in sorted(metric_names):
+        sum_metric = 0.0
+        count = 0
+        
+        # Sum from dataset 1
+        for query_metrics in per_query_metrics1.values():
+            if metric_name in query_metrics:
+                sum_metric += query_metrics[metric_name]
+                count += 1
+        
+        # Sum from dataset 2
+        for query_metrics in per_query_metrics2.values():
+            if metric_name in query_metrics:
+                sum_metric += query_metrics[metric_name]
+                count += 1
+        
+        # Compute average
+        if count > 0:
+            aggregated[metric_name] = sum_metric / count
         else:
-            print(f"Skipping {metric_name} - not found in second file")
+            print(f"Warning: No data found for metric {metric_name}")
     
     # Create output directory if it doesn't exist
     output_path = Path(output_path)
@@ -45,8 +72,8 @@ def aggregate_metrics(metrics1_path: str, metrics2_path: str, output_path: str):
     with open(output_path, 'w') as f:
         json.dump(aggregated, f, indent=4)
     
-    print(f"Aggregated metrics saved to: {output_path}")
-    print("\nAveraged metrics:")
+    print(f"\nAggregated metrics saved to: {output_path}")
+    print("\nWeighted averaged metrics:")
     for metric_name, value in aggregated.items():
         print(f"  {metric_name}: {value:.6f}")
 
@@ -64,8 +91,8 @@ if __name__ == "__main__":
         aggregate_metrics(args.metrics1_path, args.metrics2_path, args.output_path)
     else:
         base_dir = Path(__file__).parent.parent / "retrieval_outputs"
-        metrics1_path = base_dir / "trec-dl-2019" / "metrics" / "aggregated_metrics.json"
-        metrics2_path = base_dir / "trec-dl-2020" / "metrics" / "aggregated_metrics.json"
+        metrics1_path = base_dir / "trec-dl-2019" / "metrics" / "per_query_metrics.json"
+        metrics2_path = base_dir / "trec-dl-2020" / "metrics" / "per_query_metrics.json"
         output_path = base_dir / "trec-dl-19-20" / "metrics" / "aggregated_metrics.json"
 
         aggregate_metrics(

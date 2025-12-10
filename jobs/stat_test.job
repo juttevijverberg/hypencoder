@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=tasb_tot_dev
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --mem=64G
+#SBATCH --time=02:00:00
+#SBATCH --output=outputs/tasb_tot_dev_%A.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype
+
+python scripts/statistical_test.py \
+--base_path="/home/scur1744/hypencoder/retrieval_outputs/dragon_base/trec_combined" \
+--new_path="/home/scur1744/hypencoder/retrieval_outputs/dragon_freeze/trec_combined"
+
+python scripts/statistical_test.py \
+--base_path="/home/scur1744/hypencoder/retrieval_outputs/dragon_base/trec_combined" \
+--new_path="/home/scur1744/hypencoder/retrieval_outputs/dragon_nofreeze/trec_combined"
+
+#python scripts/statistical_test.py \
+#--base_path="/home/scur1744/hypencoder/retrieval_outputs/retro_base/trec_combined" \
+#--new_path="/home/scur1744/hypencoder/retrieval_outputs/retro_freeze/trec_combined"
+
+#python scripts/statistical_test.py \
+#--base_path="/home/scur1744/hypencoder/retrieval_outputs/retro_base/trec_combined" \
+#--new_path="/home/scur1744/hypencoder/retrieval_outputs/retro_nofreeze/trec_combined"
+
+
+
