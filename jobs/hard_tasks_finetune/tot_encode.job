@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_h100
+#SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
 #SBATCH --job-name=tot-dev_encode
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
-#SBATCH --time=01:20:00
+#SBATCH --time=03:20:00
 #SBATCH --output=outputs/tot-dev_encode.out
 
 module purge
@@ -14,8 +14,8 @@ module load Anaconda3/2023.07-2
 
 source activate hype
 
-export MODEL_NAME_OR_PATH="models/tot/hypencoder.tot/checkpoint-975"                  # from huggingface using from_pretrained
-export ENCODING_PATH="$HOME/hypencoder/encoded_items/tot-dev/finetune"      # path to save encoded items
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/tot/checkpoint-1925"                  # from huggingface using from_pretrained
+export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/tot-dev/finetune"      # path to save encoded items
 mkdir -p "$ENCODING_PATH"
 
 python hypencoder_cb/inference/encode.py \

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_mig
+#SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
 #SBATCH --job-name=follow-ir_p-mrr
 #SBATCH --ntasks=1
@@ -14,30 +14,30 @@ module load Anaconda3/2023.07-2
 
 source activate hype
 
-export MODEL_NAME_OR_PATH="models/hypencoder.followir/checkpoint-2553"  
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/followir/checkpoint-5106"
 unset IR_DATASET_NAME
 
 for data in robust04 core17; do
-    export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/finetune/${data}"
-    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/finetune/${data}"
+    export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/followir/finetune/${data}"
+    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/followir/${data}"
     mkdir -p "$RETRIEVAL_DIR"
 
     python scripts/evaluate.py \
-    --original_run_path="$HOME/hypencoder/retrieval_outputs/follow-ir/finetune/${data}/og/retrieved_items.jsonl" \
-    --new_run_path="$HOME/hypencoder/retrieval_outputs/follow-ir/finetune/${data}/changed/retrieved_items.jsonl" \
+    --original_run_path="$HOME/hypencoder/retrieval_outputs/followir/${data}/og/retrieved_items.jsonl" \
+    --new_run_path="$HOME/hypencoder/retrieval_outputs/followir/${data}/changed/retrieved_items.jsonl" \
     --output_dir=$RETRIEVAL_DIR \
     --original_qrel_json="$HOME/hypencoder/data/FollowIR/test/${data}/qrels_og.json" \
     --new_qrel_json="$HOME/hypencoder/data/FollowIR/test/${data}/qrels_changed.json" \
     --metric_names='("AP", "p-MRR")'
 done
 
-export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/finetune/news21"
-export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/finetune/news21"
+export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/followir/finetune/news21"
+export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/followir/news21"
 mkdir -p "$RETRIEVAL_DIR"
 
 python scripts/evaluate.py \
---original_run_path="$HOME/hypencoder/retrieval_outputs/follow-ir/finetune/news21/og/retrieved_items.jsonl" \
---new_run_path="$HOME/hypencoder/retrieval_outputs/follow-ir/finetune/news21/changed/retrieved_items.jsonl" \
+--original_run_path="$HOME/hypencoder/retrieval_outputs/followir/news21/og/retrieved_items.jsonl" \
+--new_run_path="$HOME/hypencoder/retrieval_outputs/followir/news21/changed/retrieved_items.jsonl" \
 --output_dir=$RETRIEVAL_DIR \
 --original_qrel_json="$HOME/hypencoder/data/FollowIR/test/news21/qrels_og.json" \
 --new_qrel_json="$HOME/hypencoder/data/FollowIR/test/news21/qrels_changed.json" \

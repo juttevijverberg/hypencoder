@@ -321,6 +321,7 @@ class TextEncoderConfig(PretrainedConfig):
         model_name_or_path: str = "",
         pooling_type: str = "cls",
         freeze_transformer: bool = False,
+        normalize_documents: bool = True,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -328,6 +329,7 @@ class TextEncoderConfig(PretrainedConfig):
         self.model_name_or_path = model_name_or_path
         self.pooling_type = pooling_type
         self.freeze_transformer = freeze_transformer
+        self.normalize_documents = normalize_documents
 
 
 class TextEncoder(PreTrainedModel):
@@ -337,6 +339,7 @@ class TextEncoder(PreTrainedModel):
         super(TextEncoder, self).__init__(config)
         self.transformer = AutoModel.from_pretrained(config.model_name_or_path)
         self.pooling_type = config.pooling_type
+        self.normalize_documents = config.normalize_documents
 
         if config.freeze_transformer:
             for param in self.transformer.parameters():
@@ -347,10 +350,16 @@ class TextEncoder(PreTrainedModel):
         elif self.pooling_type == "cls":
             self.pool = self.cls_pool
 
+    # def mean_pool(self, last_hidden_state, attention_mask):
+    #     return last_hidden_state.sum(dim=1) / attention_mask.sum(
+    #         dim=1, keepdim=True
+    #     )
+
     def mean_pool(self, last_hidden_state, attention_mask):
-        return last_hidden_state.sum(dim=1) / attention_mask.sum(
-            dim=1, keepdim=True
-        )
+        mask = attention_mask.unsqueeze(-1).type_as(last_hidden_state)  # [B,L,1]
+        summed = (last_hidden_state * mask).sum(dim=1)
+        denom = mask.sum(dim=1).clamp(min=1e-9)
+        return summed / denom
 
     def cls_pool(self, last_hidden_state, attention_mask):
         return last_hidden_state[:, 0]
@@ -361,6 +370,9 @@ class TextEncoder(PreTrainedModel):
         )
 
         pooled_output = self.pool(output.last_hidden_state, attention_mask)
+        
+        if self.normalize_documents:
+            pooled_output = F.normalize(pooled_output, dim=-1)
 
         return EncoderOutput(representation=pooled_output)
 

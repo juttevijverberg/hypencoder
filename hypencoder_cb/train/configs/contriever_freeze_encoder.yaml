@@ -1,8 +1,8 @@
 model_config:
   checkpoint_path: jfkback/hypencoder.6_layer
-  tokenizer_pretrained_model_name_or_path: sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco
+  tokenizer_pretrained_model_name_or_path: facebook/contriever-msmarco
   query_encoder_kwargs:
-    model_name_or_path: sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco
+    model_name_or_path: facebook/contriever-msmarco
     freeze_transformer: true
     embedding_representation: null
     base_encoder_output_dim: 768
@@ -11,9 +11,10 @@ model_config:
       activation_type: relu
       do_residual_on_last: false
   passage_encoder_kwargs:
-    model_name_or_path: sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco
+    model_name_or_path: facebook/contriever-msmarco 
     freeze_transformer: true
-    pooling_type: cls   # TAS-B still uses CLS output internally
+    pooling_type: mean
+    normalize_documents: true
   shared_encoder: true
   loss_type:
     - margin_mse
@@ -23,7 +24,6 @@ model_config:
     - {"use_in_batch_negatives": true, "only_use_first_item": true}
 data_config:
   training_data_jsonl: /scratch-shared/scur1744/tokenized_tasb.jsonl
-  #training_huggingface_dataset: 'jfkback/hypencoder-msmarco-training-dataset'
   validation_data_jsonl: null
   positive_filter_type: first
   label_key: score
@@ -31,7 +31,7 @@ data_config:
   num_negatives_to_sample: 7
 trainer_config:
   hf_trainer_config:
-    output_dir: /scratch-shared/scur1744/models/tasb_freeze2
+    output_dir: /scratch-shared/scur1744/models/contriever_freeze_norm
     overwrite_output_dir: true #Changed
     remove_unused_columns: false
     eval_strategy: 'no'
@@ -51,13 +51,13 @@ trainer_config:
     logging_steps: 10
     max_steps: -1
     save_strategy: steps
-    save_steps: 500
+    save_steps: 2500
     save_total_limit: null
     save_only_model: false
     bf16: true
     tf32: true
     fp16: false
-    run_name: "hypencoder.tasb" #Changed
+    run_name: "hypencoder.contriever_freeze" #Changed
     disable_tqdm: true
     ddp_find_unused_parameters: true
     fsdp: ''

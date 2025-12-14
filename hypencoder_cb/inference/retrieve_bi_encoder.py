@@ -36,15 +36,22 @@ class SimpleTransformerEncoder(torch.nn.Module):
     rather than custom TextDualEncoder checkpoints.
     """
     
-    def __init__(self, model_name_or_path: str, pooling_type: str = "cls"):
+    def __init__(self, model_name_or_path: str, pooling_type: str = "cls", l2_normalize: bool = False):
         super().__init__()
         self.transformer = AutoModel.from_pretrained(model_name_or_path)
         self.pooling_type = pooling_type
+        self.l2_normalize = l2_normalize
         
+    # def mean_pool(self, last_hidden_state, attention_mask):
+    #     return last_hidden_state.sum(dim=1) / attention_mask.sum(
+    #         dim=1, keepdim=True
+    #     )
+
     def mean_pool(self, last_hidden_state, attention_mask):
-        return last_hidden_state.sum(dim=1) / attention_mask.sum(
-            dim=1, keepdim=True
-        )
+        mask = attention_mask.unsqueeze(-1).type_as(last_hidden_state)  # [B,L,1]
+        summed = (last_hidden_state * mask).sum(dim=1)
+        denom = mask.sum(dim=1).clamp(min=1e-9)
+        return summed / denom
     
     def cls_pool(self, last_hidden_state, attention_mask):
         return last_hidden_state[:, 0]
@@ -60,6 +67,9 @@ class SimpleTransformerEncoder(torch.nn.Module):
             pooled = self.cls_pool(output.last_hidden_state, attention_mask)
         else:
             raise ValueError(f"Unknown pooling type: {self.pooling_type}")
+
+        if self.l2_normalize:
+            pooled = torch.nn.functional.normalize(pooled, dim=-1)
         
         # Return a simple object with representation attribute
         from types import SimpleNamespace
@@ -104,6 +114,7 @@ class BiEncoderRetriever(BaseRetriever):
         query_max_length: int = 32,
         ignore_same_id: bool = False,
         pooling_type: str = "cls",
+        l2_normalize: bool = False,
     ) -> None:
         """
         Args:
@@ -156,7 +167,7 @@ class BiEncoderRetriever(BaseRetriever):
         else:
             print(f"Loading standard HuggingFace model from {model_name_or_path}")
             self.query_encoder = (
-                SimpleTransformerEncoder(model_name_or_path, pooling_type=pooling_type)
+                SimpleTransformerEncoder(model_name_or_path, pooling_type=pooling_type, l2_normalize=l2_normalize)
                 .to(device, dtype=self.dtype)
                 .eval()
             )
@@ -445,6 +456,7 @@ def do_retrieval(
     metric_names: Optional[List[str]] = None,
     ignore_same_id: bool = False,
     pooling_type: str = "cls",
+    l2_normalize: bool = False,
 ) -> None:
     """Does retrieval and optionally evaluation for standard bi-encoder models.
 
@@ -512,6 +524,7 @@ def do_retrieval(
             query_max_length=query_max_length,
             ignore_same_id=ignore_same_id,
             pooling_type=pooling_type,
+            l2_normalize=l2_normalize,
             **retriever_kwargs,
         ),
         output_dir=output_dir,

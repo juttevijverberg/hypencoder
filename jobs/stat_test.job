@@ -16,20 +16,5 @@ module load Anaconda3/2023.07-2
 source activate hype
 
 python scripts/statistical_test.py \
---base_path="/home/scur1744/hypencoder/retrieval_outputs/dragon_base/trec_combined" \
---new_path="/home/scur1744/hypencoder/retrieval_outputs/dragon_freeze/trec_combined"
-
-python scripts/statistical_test.py \
---base_path="/home/scur1744/hypencoder/retrieval_outputs/dragon_base/trec_combined" \
---new_path="/home/scur1744/hypencoder/retrieval_outputs/dragon_nofreeze/trec_combined"
-
-#python scripts/statistical_test.py \
-#--base_path="/home/scur1744/hypencoder/retrieval_outputs/retro_base/trec_combined" \
-#--new_path="/home/scur1744/hypencoder/retrieval_outputs/retro_freeze/trec_combined"
-
-#python scripts/statistical_test.py \
-#--base_path="/home/scur1744/hypencoder/retrieval_outputs/retro_base/trec_combined" \
-#--new_path="/home/scur1744/hypencoder/retrieval_outputs/retro_nofreeze/trec_combined"
-
-
-
+--base_path="/home/scur1744/hypencoder/retrieval_outputs/contriever_base_norm/trec_combined" \
+--new_path="/home/scur1744/hypencoder/retrieval_outputs/contriever_freeze_norm/trec_combined"

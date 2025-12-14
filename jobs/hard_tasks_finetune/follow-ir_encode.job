@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_h100
+#SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
 #SBATCH --job-name=follow-ir_encode
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
-#SBATCH --time=01:00:00
+#SBATCH --time=04:00:00
 #SBATCH --output=outputs/follow-ir_encode.out
 
 module purge
@@ -14,10 +14,10 @@ module load Anaconda3/2023.07-2
 
 source activate hype
 
-export MODEL_NAME_OR_PATH="models/hypencoder.followir/checkpoint-2553" 
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/followir/checkpoint-5106" 
 
 for data in robust04 news21 core17; do
-    export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/finetune/${data}"
+    export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/followir/finetune/${data}"
     mkdir -p "$ENCODING_PATH"
 
     python hypencoder_cb/inference/encode.py \

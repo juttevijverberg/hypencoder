@@ -1,9 +1,9 @@
 model_config:
   checkpoint_path: jfkback/hypencoder.6_layer
-  tokenizer_pretrained_model_name_or_path: sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco
+  tokenizer_pretrained_model_name_or_path: facebook/contriever-msmarco
   query_encoder_kwargs:
-    model_name_or_path: sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco
-    freeze_transformer: true
+    model_name_or_path: facebook/contriever-msmarco
+    freeze_transformer: false
     embedding_representation: null
     base_encoder_output_dim: 768
     converter_kwargs:
@@ -11,9 +11,10 @@ model_config:
       activation_type: relu
       do_residual_on_last: false
   passage_encoder_kwargs:
-    model_name_or_path: sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco
-    freeze_transformer: true
-    pooling_type: cls   # TAS-B still uses CLS output internally
+    model_name_or_path: facebook/contriever-msmarco
+    freeze_transformer: false
+    pooling_type: mean
+    normalize_documents: true
   shared_encoder: true
   loss_type:
     - margin_mse
@@ -30,20 +31,20 @@ data_config:
   num_negatives_to_sample: 7
 trainer_config:
   hf_trainer_config:
-    output_dir: /scratch-shared/scur1744/models/tasb_freeze_final
+    output_dir: /scratch-shared/scur1744/models/contriever_nofreeze_norm
     overwrite_output_dir: true #Changed
     remove_unused_columns: false
     eval_strategy: 'no'
-    per_device_train_batch_size: 64
-    per_device_eval_batch_size: 64
-    gradient_accumulation_steps: 1
+    per_device_train_batch_size: 32
+    per_device_eval_batch_size: 32
+    gradient_accumulation_steps: 2
     dataloader_prefetch_factor: 5
     dataloader_num_workers: 8
     dataloader_persistent_workers: false
-    learning_rate: 1.0e-03
+    learning_rate: 1e-5 #Changed 
     weight_decay: 0.01 #Changed
-    num_train_epochs: 3
-    lr_scheduler_type: linear
+    num_train_epochs: 3 #Changed
+    lr_scheduler_type: linear #Changed
     warmup_ratio: 0.1 #changed
     warmup_steps: 0 #Changed
     logging_strategy: steps
@@ -56,7 +57,7 @@ trainer_config:
     bf16: true
     tf32: true
     fp16: false
-    run_name: "hypencoder.tasb" #Changed
+    run_name: "hypencoder.contriever_nofreeze" #Changed
     disable_tqdm: true
     ddp_find_unused_parameters: true
     fsdp: ''

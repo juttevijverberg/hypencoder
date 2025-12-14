@@ -30,15 +30,15 @@ data_config:
   num_negatives_to_sample: 1 # Change the number of negatives to sample based on how many you have
 trainer_config: # RS: Training config of hard negatives
   hf_trainer_config:
-    output_dir: models/followir
-    overwrite_output_dir: false
+    output_dir: /scratch-shared/scur1744/models/followir
+    overwrite_output_dir: true
     remove_unused_columns: false
-    evaluation_strategy: 'no'
-    per_device_train_batch_size: 96 # RS: Changed batch-size from 64 to 96
-    per_device_eval_batch_size: 64
-    gradient_accumulation_steps: 1
+    eval_strategy: 'no'
+    per_device_train_batch_size: 48 # RS: Changed batch-size from 64 to 96
+    per_device_eval_batch_size: 48
+    gradient_accumulation_steps: 2
     dataloader_prefetch_factor: 5
-    dataloader_num_workers: 1
+    dataloader_num_workers: 8
     dataloader_persistent_workers: false
     learning_rate: 8.0e-06 #RS: changed 2.0e-05 to 8.0e-06
     weight_decay: 0.0
@@ -48,7 +48,7 @@ trainer_config: # RS: Training config of hard negatives
     warmup_steps: 0 # RS: changed 6000 to 0
     logging_strategy: steps
     logging_steps: 10
-    max_steps: -1 # RS: Changed 1000000 to 10000
+    max_steps: -1 # RS: Changed 1000000 to -1
     save_strategy: steps
     save_steps: 10000
     save_total_limit: null

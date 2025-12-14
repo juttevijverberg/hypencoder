@@ -110,17 +110,17 @@ def tomt_to_standard(
 
 
 def run_tomt():
-    hard_negative_file = "/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Books/bm25_hard_negatives_all.json"
+    hard_negative_file = "data/TOT/train/Books/bm25_hard_negatives_all.json"
     document_file = [
-        "/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Books/documents.json",
-        "/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Books/hard_negative_documents.json",
-        "/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Books/negative_documents.json",
+        "data/TOT/train/Books/documents.json",
+        "data/TOT/train/Books/hard_negative_documents.json",
+        "data/TOT/train/Books/negative_documents.json",
     ]
 
     for split in ["train", "validation", "test"]:
-        qrel_file = f"/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Books/splits/{split}/qrels.txt"
-        query_file = f"/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Books/splits/{split}/queries.json"
-        output_file = f"/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/{split}/books.standard.jsonl"
+        qrel_file = f"data/TOT/train/Books/splits/{split}/qrels.txt"
+        query_file = f"data/TOT/train/Books/splits/{split}/queries.json"
+        output_file = f"data/TOT/train/Books/{split}/books.standard.jsonl"
         tomt_to_standard(
             qrel_file,
             query_file,
@@ -129,17 +129,17 @@ def run_tomt():
             output_file,
         )
 
-    hard_negative_file = "/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Movies/bm25_hard_negatives_all.json"
+    hard_negative_file = "data/TOT/train/Movies/bm25_hard_negatives_all.json"
     document_file = [
-        "/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Movies/documents.json",
-        "/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Movies/hard_negative_documents.json",
-        "/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Movies/negative_documents.json",
+        "data/TOT/train/Movies/documents.json",
+        "data/TOT/train/Movies/hard_negative_documents.json",
+        "data/TOT/train/Movies/negative_documents.json",
     ]
 
     for split in ["train", "validation", "test"]:
-        qrel_file = f"/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Movies/splits/{split}/qrels.txt"
-        query_file = f"/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/raw/Movies/splits/{split}/queries.json"
-        output_file = f"/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/{split}/movies.standard.jsonl"
+        qrel_file = f"data/TOT/train/Movies/splits/{split}/qrels.txt"
+        query_file = f"data/TOT/train/Movies/splits/{split}/queries.json"
+        output_file = f"data/TOT/train/Movies/{split}/movies.standard.jsonl"
         tomt_to_standard(
             qrel_file,
             query_file,
@@ -150,9 +150,9 @@ def run_tomt():
 
     # Join movies and books
     for split in ["train", "validation", "test"]:
-        movies_file = f"/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/{split}/movies.standard.jsonl"
-        books_file = f"/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/{split}/books.standard.jsonl"
-        output_file = f"/scratch/workspace/jkillingback_umass_edu-data/data/tomt_22/{split}/all.standard.jsonl"
+        movies_file = f"data/TOT/train/Movies/{split}/movies.standard.jsonl"
+        books_file = f"data/TOT/train/Books/{split}/books.standard.jsonl"
+        output_file = f"data/TOT/train/All/{split}/all.standard.jsonl"
 
         with JsonlWriter(output_file) as writer:
             with JsonlReader(movies_file) as reader:
@@ -169,7 +169,7 @@ def msmarco_with_instruct_to_standard():
         "samaya-ai/msmarco-w-instructions", split="train", streaming=False
     )
 
-    output_file = "/scratch/workspace/jkillingback_umass_edu-data/data/msmarco_with_instructions/standard/train.all_queries.jsonl"
+    output_file = "data/DL_HARD/train/train.all_queries.jsonl"
     total_negatives = 5
 
     with JsonlWriter(output_file) as writer:

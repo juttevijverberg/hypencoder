@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_h100
+#SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
 #SBATCH --job-name=follow-ir_retrieve
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
-#SBATCH --time=00:20:00
+#SBATCH --time=03:00:00
 #SBATCH --output=outputs/follow-ir_retrieve.out
 
 module purge
@@ -14,13 +14,13 @@ module load Anaconda3/2023.07-2
 
 source activate hype
 
-export MODEL_NAME_OR_PATH="models/hypencoder.followir/checkpoint-2553"   
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/followir/checkpoint-5106"   
 unset IR_DATASET_NAME
 
 for type in og changed; do
     for data in robust04 core17; do
-        export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/finetune/${data}"
-        export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/finetune/${data}/${type}"
+        export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/followir/finetune/${data}"
+        export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/followir/${data}/${type}"
         mkdir -p "$RETRIEVAL_DIR"
 
         python hypencoder_cb/inference/retrieve.py \
@@ -33,8 +33,8 @@ for type in og changed; do
         --query_text_key="instruction_${type}" \
         --metric_names='("AP", "RR")'
     done
-    export ENCODING_PATH="$HOME/hypencoder/encoded_items/follow-ir/finetune/news21"
-    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/follow-ir/finetune/news21/${type}"
+    export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/followir/finetune/news21"
+    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/followir/news21/${type}"
     mkdir -p "$RETRIEVAL_DIR"
 
     python hypencoder_cb/inference/retrieve.py \
@@ -47,22 +47,3 @@ for type in og changed; do
     --query_text_key="instruction_${type}" \
     --metric_names='("nDCG@5", "RR")'
 done
-
-
-
-
-
-
-
-
-               # from huggingface using from_pretrained
-export ENCODING_PATH="$HOME/hypencoder/encoded_items/tot-dev/finetune"      # path to save encoded items
-export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/tot-dev/finetune"
-mkdir -p "$RETRIEVAL_DIR"
-
-python hypencoder_cb/inference/retrieve.py \
---model_name_or_path=$MODEL_NAME_OR_PATH \
---encoded_item_path=$ENCODING_PATH \
---output_dir=$RETRIEVAL_DIR \
---ir_dataset_name="trec-tot/2023/dev" \
---metric_names='("nDCG@10", "RR", "nDCG@1000")'
