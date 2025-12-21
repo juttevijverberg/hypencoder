@@ -11,7 +11,7 @@ import fire
 from datasets import load_dataset
 from tqdm import tqdm
 
-from phd_repo.utils.jsonl_utils import JsonlReader, JsonlWriter
+from hypencoder_cb.utils.jsonl_utils import JsonlReader, JsonlWriter
 
 
 def stable_hex_hashing(input: str) -> str:
@@ -357,11 +357,11 @@ def run_followir():
     for dataset_name in dataset_names:
         dataset_name_for_path = dataset_name.split("/")[-1]
         print(dataset_name)
-        output_dir = f"/scratch/workspace/jkillingback_umass_edu-data/data/followir_no_title/{dataset_name_for_path}/standard"
+        output_dir = f"data/followir/{dataset_name_for_path}/standard"
         followir_to_standard(
             dataset_name,
             output_dir,
-            f"followir_no_title_{dataset_name_for_path.replace('-', '_')}",
+            f"{dataset_name_for_path.replace('-', '_')}",
             include_title=False,
         )
 

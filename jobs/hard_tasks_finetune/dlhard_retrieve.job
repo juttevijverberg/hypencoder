@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=trecdlhard
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=04:00:00
+#SBATCH --output=outputs/babase_trecdlhard.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+
+source activate hype
+
+# Common Configuration
+export MODEL_NAME_OR_PATH="$HOME/hypencoder/models/be_base" 
+export ENCODING_PATH="$HOME/hypencoder/encoded_items/be_base/msmarco-passage-dev"
+export OUTPUT_DIR="$HOME/hypencoder/retrieval_outputs/baselines/be_base/trec-dl-hard2"
+export IR_DATASET_NAME="msmarco-passage/trec-dl-hard"
+
+mkdir -p "$(dirname "$OUTPUT_DIR")" 
+
+python hypencoder_cb/inference/retrieve_bi_encoder.py \
+--model_name_or_path=$MODEL_NAME_OR_PATH \
+--encoded_item_path=$ENCODING_PATH \
+--output_dir=$OUTPUT_DIR \
+--query_jsonl="$HOME/hypencoder/data/DL_HARD/test/queries.jsonl" \
+--qrel_json="$HOME/hypencoder/data/DL_HARD/test/qrels.json" \
+--query_max_length=64

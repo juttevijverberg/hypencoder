@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_h100
+#SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
 #SBATCH --job-name=ret_all_attacks_msdev
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
-#SBATCH --time=14:00:00
+#SBATCH --time=12:00:00
 #SBATCH --output=outputs/retrieve_all_attacks_msmarco_dev_%A.out
 
 module purge
@@ -27,7 +27,7 @@ python hypencoder_cb/inference/retrieve_multiple.py \
     --encoded_item_path=$ENCODING_PATH \
     --base_data_dir=$BASE_DATA_DIR \
     --base_output_dir=$BASE_OUTPUT_DIR \
-    --attack_types "['paraphrase', 'naturality', 'mispelling', 'ordering']" \
+    --attack_types "['ordering']" \
     --qrel_json=$QREL_JSON \
     --query_id_key="id" \
     --query_text_key="text" \
