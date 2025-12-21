@@ -1,4 +1,3 @@
-# To do: change max document en query length.
 model_config:
   checkpoint_path: jfkback/hypencoder.6_layer
   tokenizer_pretrained_model_name_or_path: google-bert/bert-base-uncased
@@ -27,28 +26,28 @@ data_config:
   positive_filter_kwargs:
     positive_type: positive
   num_positives_to_sample: 1
-  num_negatives_to_sample: 1 # Change the number of negatives to sample based on how many you have
-trainer_config: # RS: Training config of hard negatives
+  num_negatives_to_sample: 1 
+trainer_config:
   hf_trainer_config:
     output_dir: /scratch-shared/scur1744/models/followir
     overwrite_output_dir: true
     remove_unused_columns: false
     eval_strategy: 'no'
-    per_device_train_batch_size: 48 # RS: Changed batch-size from 64 to 96
+    per_device_train_batch_size: 48
     per_device_eval_batch_size: 48
     gradient_accumulation_steps: 2
     dataloader_prefetch_factor: 5
     dataloader_num_workers: 8
     dataloader_persistent_workers: false
-    learning_rate: 8.0e-06 #RS: changed 2.0e-05 to 8.0e-06
+    learning_rate: 8.0e-06
     weight_decay: 0.0
     num_train_epochs: 1
     lr_scheduler_type: linear
-    warmup_ratio: 1.0e-01 #RS: changed 0.0 to 1.0e-01
-    warmup_steps: 0 # RS: changed 6000 to 0
+    warmup_ratio: 1.0e-01
+    warmup_steps: 0
     logging_strategy: steps
     logging_steps: 10
-    max_steps: -1 # RS: Changed 1000000 to -1
+    max_steps: -1
     save_strategy: steps
     save_steps: 10000
     save_total_limit: null
@@ -56,7 +55,7 @@ trainer_config: # RS: Training config of hard negatives
     bf16: true
     tf32: true
     fp16: false
-    run_name: "followir"
+    run_name: "hypencoder_instruction_finetune"
     disable_tqdm: true
     ddp_find_unused_parameters: true
     fsdp: ''
