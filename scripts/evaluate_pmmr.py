@@ -61,7 +61,6 @@ def do_eval_multiple_runs(
             "Only one of ir_dataset_name or qrel JSON files can be provided."
         )
 
-    # Determine qrels for each run
     if ir_dataset_name:
         original_qrels = load_qrels_from_ir_datasets(ir_dataset_name)
         new_qrels = original_qrels
@@ -76,24 +75,21 @@ def do_eval_multiple_runs(
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Handle p-MRR metric separately
     should_calc_p_mrr = False
     if metric_names:
-        metric_names = list(metric_names)  # Ensure it's a mutable list
+        metric_names = list(metric_names)
         if "p-MRR" in metric_names:
             should_calc_p_mrr = True
             metric_names.remove("p-MRR")
-        if not metric_names:  # If p-MRR was the only metric
+        if not metric_names: 
             metric_names = None
 
-    # Load runs
     original_run = load_standard_format_as_run(original_run_path, score_key="score")
     new_run = load_standard_format_as_run(new_run_path, score_key="score")
 
     all_metrics = {}
     run_metrics = {}
 
-    # 1. Calculate metrics for each run
     for run_name, run_data, qrels in [
         ("original", original_run, original_qrels),
         ("new", new_run, new_qrels),
@@ -105,10 +101,8 @@ def do_eval_multiple_runs(
 
     all_metrics["individual_runs"] = run_metrics
 
-    # 2. Calculate average of metrics
     avg_metrics = {}
     if len(run_metrics) > 0:
-        # Get all unique metric keys from all runs
         all_keys = set()
         for metrics in run_metrics.values():
             all_keys.update(metrics.keys())
@@ -121,21 +115,18 @@ def do_eval_multiple_runs(
     print("--- Average Metrics ---")
     print(json.dumps(avg_metrics, indent=2))
 
-    # 3. Calculate p-MRR if requested
     if should_calc_p_mrr:
         p_mrr = compute_followir_p_mrr(original_run, new_run, original_qrels, new_qrels)
         all_metrics["p_mrr"] = p_mrr
         print("--- p-MRR (vs original qrels) ---")
         print(f"{p_mrr:.2f}")
 
-    # Save all results to a single file
     results_file = output_dir / "evaluation_summary.json"
     with open(results_file, "w") as f:
         json.dump(all_metrics, f, indent=4)
 
     print(f"\nSaved detailed evaluation summary to {results_file}")
 
-    # Pretty print standard format for inspection
     for run_path in [original_run_path, new_run_path]:
         run_path = Path(run_path)
         retrieval_pretty_path = run_path.with_suffix(".txt")
