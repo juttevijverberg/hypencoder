@@ -13,7 +13,7 @@ model_config:
   passage_encoder_kwargs:
     model_name_or_path: Shitao/RetroMAE_MSMARCO_finetune
     freeze_transformer: false
-    pooling_type: cls   # TAS-B still uses CLS output internally
+    pooling_type: cls 
   shared_encoder: true
   loss_type:
     - margin_mse
@@ -31,7 +31,7 @@ data_config:
 trainer_config:
   hf_trainer_config:
     output_dir: /scratch-shared/scur1744/models/retro_nofreeze
-    overwrite_output_dir: true #Changed
+    overwrite_output_dir: true
     remove_unused_columns: false
     eval_strategy: 'no'
     per_device_train_batch_size: 32
@@ -40,12 +40,12 @@ trainer_config:
     dataloader_prefetch_factor: 5
     dataloader_num_workers: 8
     dataloader_persistent_workers: false
-    learning_rate: 1e-5 #Changed 
-    weight_decay: 0.01 #Changed
-    num_train_epochs: 3 #Changed
-    lr_scheduler_type: linear #Changed
-    warmup_ratio: 0.1 #changed
-    warmup_steps: 0 #Changed
+    learning_rate: 1e-5 
+    weight_decay: 0.01
+    num_train_epochs: 3 
+    lr_scheduler_type: linear 
+    warmup_ratio: 0.1 
+    warmup_steps: 0 
     logging_strategy: steps
     logging_steps: 10
     max_steps: -1
@@ -56,7 +56,7 @@ trainer_config:
     bf16: true
     tf32: true
     fp16: false
-    run_name: "hypencoder.retro_nofreeze" #Changed
+    run_name: "hypencoder.retro_nofreeze" 
     disable_tqdm: true
     ddp_find_unused_parameters: true
     fsdp: ''
