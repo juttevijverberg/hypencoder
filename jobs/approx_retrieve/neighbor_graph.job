@@ -7,18 +7,18 @@
 #SBATCH --cpus-per-task=27
 #SBATCH --time=14:00:00
 #SBATCH --mem=250G
-#SBATCH --output=outputs/arne/run_neighbor_graph_%A.out
+#SBATCH --output=outputs/run_neighbor_graph_%A.out
 
-export PYTORCH_ALLOC_CONF=expandable_segments:True
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 module purge
 module load 2023
 module load Anaconda3/2023.07-2
 
-source activate hype-faiss
+source activate hype
 
 python hypencoder_cb/inference/neighbor_graph.py \
---encoded_items_path="$HOME/hypencoder/encoded_items/msmarco-passage-dev" \
---output_path="$HOME/hypencoder/neighbor_graph/trec-dl-2019/trec-dl-2019_neighbor_graph.jsonl" \
+--encoded_items_path="$HOME/hypencoder/encoded_items/msmarco-passage-dev.docs" \
+--output_path="$HOME/hypencoder/neighbor_graph/msmarco-passage-dev/msmarco-passage-dev_neighbor_graph.jsonl" \
 --batch_size=10 \
 --top_k=100

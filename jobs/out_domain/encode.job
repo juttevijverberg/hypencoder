@@ -4,8 +4,9 @@
 #SBATCH --gpus=1
 #SBATCH --job-name=run_encode
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=9
-#SBATCH --time=04:00:00
+#SBATCH --cpus-per-task=27
+#SBATCH --time=14:00:00
+#SBATCH --mem=250G
 #SBATCH --output=outputs/run_encode_%A.out
 
 module purge
@@ -16,5 +17,6 @@ source activate hype
 
 srun python -u hypencoder_cb/inference/encode.py \
   --model_name_or_path="jfkback/hypencoder.6_layer" \
-  --output_path="$HOME/hypencoder/encoded_items/touche" \
-  --ir_dataset_name="beir/webis-touche2020"                                 # from huggingface, downloaded into .ir_datasets - webis-touche2020/v2, fiqa/test, dbpedia-entity/test, trec-covid, nfcorpus/test
+  --output_path="$HOME/hypencoder/encoded_items/fiqa" \
+  --ir_dataset_name="beir/fiqa/test" \
+  --dtype="bf16"

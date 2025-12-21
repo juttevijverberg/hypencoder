@@ -170,6 +170,16 @@ Evaluation is done automatically when `hypencoder_cb/inference/retrieve.py` is c
 }
 ```
 
+##### BE-base Faiss Evaluation
+For quick BE-base experiments without a separate encoding step you can run the new helper script, which encodes the IR dataset on-the-fly and performs Faiss-based retrieval:
+```
+python scripts/evaluate_bebase.py \
+    --model_name_or_path=models/be_base \
+    --ir_dataset_name=trec-tot/2023/dev \
+    --output_dir=outputs/be_base_trec_tot
+```
+This script reuses the tokenizer shipped with the checkpoint, encodes both documents and queries using the BE-base dual encoder, and reports standard IR metrics via `ir_measures`. Ensure `faiss` (CPU or GPU build) is installed in your environment. If you already encoded the corpus via `hypencoder_cb/inference/encode.py`, pass `--encoded_docs_path=/path/to/encoded/docs` to skip re-encoding and load the DocList artifacts directly. To persist freshly encoded documents for reuse, add `--save_encoded_docs_path=/path/to/save/doclist` and the script will export a DocList compatible with `load_encoded_items_from_disk`.
+
 #### Custom Q-Nets
 In the paper we only looked at simple linear q-nets but in theory any type of neural network can be used. The code in this repository is flexible enough to support any q-net whose only learnable parameters can be expressed as a set of matrices and vectors. This should include almost every neural network.
 

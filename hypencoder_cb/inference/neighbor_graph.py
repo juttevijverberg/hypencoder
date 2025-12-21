@@ -4,8 +4,6 @@ import fire
 import torch
 from tqdm import tqdm
 import time
-from pathlib import Path
-import sys
 
 from hypencoder_cb.inference.shared import load_encoded_items_from_disk
 from hypencoder_cb.utils.iterator_utils import batchify_slicing
@@ -28,23 +26,19 @@ def get_embeddings(path: str) -> Tuple[torch.Tensor, List[str], List[str]]:
 def embedding_search(
     query_embeddings: torch.Tensor,
     item_embeddings: torch.Tensor,
-    batch_size: int = 10000,
+    batch_size: int = 10,
     top_k: int = 100,
     distance: str = "l2",
 ) -> Iterable[Tuple[torch.Tensor, int]]:
     batch_offset = 0
-    
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-    
     for batch in tqdm(batchify_slicing(query_embeddings, batch_size)):
         if distance == "l2":
-            similarity = -torch.cdist(batch, item_embeddings, p=2)   # similarity is calculated between batch and all items, so batch is not nCandidates
+            similarity = -torch.cdist(batch, item_embeddings, p=2)
         elif distance == "ip":
             similarity = batch @ item_embeddings.T
-        top_indices = torch.topk(similarity, top_k, dim=1).indices.cpu()        # Shape: (batch size, top_k)
+        top_k = torch.topk(similarity, top_k, dim=1).indices.cpu()
 
-        yield (top_indices, batch_offset)
+        yield (top_k, batch_offset)
         batch_offset += batch.shape[0]
 
 
@@ -73,9 +67,6 @@ def create_item_graph_with_item_embedding_search(
         distance (str, optional): The distance metric to use. Options are
             "l2" or "ip". Defaults to "l2".
     """
-    output_file = Path(output_path)
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    
     start = time.time()
 
     if isinstance(dtype, str):
@@ -83,6 +74,7 @@ def create_item_graph_with_item_embedding_search(
 
     item_embeddings, item_ids, _ = get_embeddings(encoded_items_path)
     item_embeddings = item_embeddings.to(device, dtype=dtype)
+
     t1 = time.time()
     print(f"Loaded {len(item_ids)} embeddings to {device} in {t1 - start:.5f} seconds.")
 
@@ -92,21 +84,24 @@ def create_item_graph_with_item_embedding_search(
         batch_size=batch_size,
         top_k=top_k,
         distance=distance,
-    ) # This function returns almost instantly, no latency here (.02 ms)
+    )
+
     t2 = time.time()
     print(f"Initialized embedding search iterator in {t2 - t1:.5f} seconds.")
-    
-    with JsonlWriter(output_file) as writer:
+
+    with JsonlWriter(output_path) as writer:
         for top_indices, offset in top_indices_iter:
             for i, item_id in enumerate(
                 item_ids[offset : offset + top_indices.shape[0]]
             ):
-                neighbor_indices = top_indices[i]       # neighbors for i-th item in the batch
-                    
+                neighbor_indices = top_indices[i]
+
                 neighbors = [
-                    item_ids[neighbor_index] for neighbor_index in neighbor_indices if neighbor_index != offset + i     # neighbor_index != i
+                    item_ids[neighbor_index]
+                    for neighbor_index in neighbor_indices
+                    if neighbor_index != i
                 ]
-                
+
                 writer.write(
                     {
                         "item_id": item_id,
@@ -118,9 +113,4 @@ def create_item_graph_with_item_embedding_search(
     print(f"Total time to construct neighbor graph: {end - start:.5f} seconds.")
 
 if __name__ == "__main__":
-
-    print("Command-line arguments:")
-    for arg in sys.argv:
-        print(arg)
-    
     fire.Fire(create_item_graph_with_item_embedding_search)
