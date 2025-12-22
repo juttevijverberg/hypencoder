@@ -4,18 +4,17 @@ This repository was adapted from the repo for the original paper, "Hypencoder: H
 The core code, data, and models are now available. This means you can train your own Hypencoder, use a pre-trained Hypencoder off-the-shelf, and reproduce the major results from the paper exactly.
 
 
-![main_image](./imgs/main_figure.jpg)
+![main_image](./imgs/main-figure-new.jpg)
 
 <h4 align="center">
     <p>
         <a href=#installation>Installation</a> |
         <a href=#quick-start>Quick Start</a> |
-        <a href="https://arxiv.org/pdf/2502.05364">Paper</a> |
         <a href=#models>Models</a> |
         <a href=#data>Data</a> |
         <a href=#artifacts>Artifacts</a> |
+        <a href=#extension-retrieve-with-faiss>Extension Faiss</a> |
         <a href=#training>Training</a> |
-        <a href=#collaboration>Collaboration</a> |
         <a href="#cite">Citation</a>
     <p>
 </h4>
@@ -29,7 +28,7 @@ gh repo clone jfkback/hypencoder-paper
 ### Make a conda environment and install the requirements
 ```
 conda create --name hype python=3.10 -y
-source activate hype-faiss
+source activate hype
 pip install -r requirements.txt
 ```
 
@@ -56,7 +55,7 @@ To train a model you will need:
 - `omegaconf`
 - `datasets`
 
-To use Faiss you will need an additional library:
+To use Faiss you will need an additional library, this can be `pip` installed in the active environment:
 - `faiss-gpu`
 
 ## Quick Start
@@ -187,7 +186,7 @@ mkdir -p "$SAVE_ENCODED_DOCS_PATH"
 python scripts/evaluate_bebase.py \
     --model_name_or_path=[path_to_be_base_checkpoint] \
     --ir_dataset_name=trec-tot/2023/dev \
-    --output_dir=outputs/be_base_trec_tot \
+    --output_dir="$HOME/hypencoder/retrieval_outputs/be_base/trec-tot" \
     --save_encoded_docs_path="$SAVE_ENCODED_DOCS_PATH"
 ```
 This script uses the tokenizer with the checkpoint, encodes both documents and queries using the BE-base dual encoder, and reports standard IR metrics via `ir_measures`. If you already encoded the corpus via `hypencoder_cb/inference/encode.py`, pass `--encoded_docs_path=/path/to/encoded/docs` to skip re-encoding and load the DocList artifacts directly. To persist freshly encoded documents for reuse, add `--save_encoded_docs_path=/path/to/save/doclist` and the script will export a DocList compatible with `load_encoded_items_from_disk`.
@@ -243,6 +242,7 @@ We have also uploaded all the run files for our experiments (FollowIR coming soo
 
 
 ## Citation
+When using this repository, please cite the original paper:
 ```
 @inproceedings{hypencoder,
     author = {Killingback, Julian and Zeng, Hansi and Zamani, Hamed},
