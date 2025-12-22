@@ -13,7 +13,7 @@ The core code, data, and models are now available. This means you can train your
         <a href=#models>Models</a> |
         <a href=#data>Data</a> |
         <a href=#artifacts>Artifacts</a> |
-        <a href=#extension-retrieve-with-faiss>Extension Faiss</a> |
+        <a href=#extensions>Extensions</a> |
         <a href=#training>Training</a> |
         <a href="#cite">Citation</a>
     <p>
@@ -180,7 +180,8 @@ To build a custom q-net you will need to make a new q-net converter similar to t
 3. `__call__` which takes three arguments `matrices`, `vectors`,  and `is_training`. See `RepeatedDenseBlockConverter` for details on the type of these arguments. This method should
 return a callable object which excepts a torch tensor in the shape (num_queries, num_items_per_query, hidden_dim) and returns a tensor with the shape (num_queries, num_items_per_query, 1) which contains the relevance score for each query and associated item.
 
-## Extension: Retrieve with Faiss
+## Extensions
+### Retrieve with Faiss
 BE-Base evaluation is performed without a separate encoding script, the dataset is encoded on-the-fly and performs optimized Faiss retrieval: 
 ```
 export SAVE_ENCODED_DOCS_PATH="$HOME/hypencoder/encoded_items/be_base/trec-tot"
