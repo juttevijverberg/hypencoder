@@ -1,13 +1,7 @@
 # Hypencoder
-Official Repository for "Hypencoder: Hypernetworks for Information Retrieval".
+This repository was adapted from the repo for the original paper, "Hypencoder: Hypernetworks for Information Retrieval" by Killingback et al. Link: https://arxiv.org/pdf/2502.05364
 
-This repo is still a work-in-progress, but all the core code, data, and models are now available. This means you can train your own Hypencoder, use a pre-trained Hypencoder off-the-shelf, and reproduce the major results from the paper exactly.
-
-Todos:
-- [ ] Check training code works as expected
-- [ ] Check approximate retrieval code works as expected
-- [ ] Upload BE-Base checkpoint.
-- [ ] Add retrieval functionality for bi-encoders.
+The core code, data, and models are now available. This means you can train your own Hypencoder, use a pre-trained Hypencoder off-the-shelf, and reproduce the major results from the paper exactly.
 
 
 ![main_image](./imgs/main_figure.jpg)
@@ -170,15 +164,31 @@ Evaluation is done automatically when `hypencoder_cb/inference/retrieve.py` is c
 }
 ```
 
-##### BE-base Faiss Evaluation
-For quick BE-base experiments without a separate encoding step you can run the new helper script, which encodes the IR dataset on-the-fly and performs Faiss-based retrieval:
+## Model checkpoints
+Additional model checkpoints have been made available:
+[TOT Models](https://drive.google.com/drive/folders/1iMwgvoTbae9AY5IRXjf-UIwCLMGLaJL1?usp=drive_link)
+[FollowIR Models](https://drive.google.com/drive/folders/13oGWmJCuQPe-xnMiiqi2Kk0qyguJLE87?usp=drive_link)
+[BE-Baseline](https://drive.google.com/drive/folders/1iZVeZmP66e9NADY6UMUqq3SXfrnU1fqY?usp=drive_link)
+
+## Extension: Retrieve with Faiss
+To run BE-Base with Faiss, use the BE-Base checkpoint above. Faiss should be installled in the environment, when using a `conda` environment that works as follows:
+
 ```
+conda install -c pytorch faiss-gpu
+```
+
+BE-Base evaluation is performed without a separate encoding script, the dataset is encoded on-the-fly and performs optimized Faiss retrieval: 
+```
+export SAVE_ENCODED_DOCS_PATH="$HOME/hypencoder/encoded_items/be_base/trec-tot"
+mkdir -p "$SAVE_ENCODED_DOCS_PATH"
+
 python scripts/evaluate_bebase.py \
-    --model_name_or_path=models/be_base \
+    --model_name_or_path=[path_to_be_base_checkpoint] \
     --ir_dataset_name=trec-tot/2023/dev \
-    --output_dir=outputs/be_base_trec_tot
+    --output_dir=outputs/be_base_trec_tot \
+    --save_encoded_docs_path="$SAVE_ENCODED_DOCS_PATH"
 ```
-This script reuses the tokenizer shipped with the checkpoint, encodes both documents and queries using the BE-base dual encoder, and reports standard IR metrics via `ir_measures`. Ensure `faiss` (CPU or GPU build) is installed in your environment. If you already encoded the corpus via `hypencoder_cb/inference/encode.py`, pass `--encoded_docs_path=/path/to/encoded/docs` to skip re-encoding and load the DocList artifacts directly. To persist freshly encoded documents for reuse, add `--save_encoded_docs_path=/path/to/save/doclist` and the script will export a DocList compatible with `load_encoded_items_from_disk`.
+This script uses the tokenizer with the checkpoint, encodes both documents and queries using the BE-base dual encoder, and reports standard IR metrics via `ir_measures`. If you already encoded the corpus via `hypencoder_cb/inference/encode.py`, pass `--encoded_docs_path=/path/to/encoded/docs` to skip re-encoding and load the DocList artifacts directly. To persist freshly encoded documents for reuse, add `--save_encoded_docs_path=/path/to/save/doclist` and the script will export a DocList compatible with `load_encoded_items_from_disk`.
 
 #### Custom Q-Nets
 In the paper we only looked at simple linear q-nets but in theory any type of neural network can be used. The code in this repository is flexible enough to support any q-net whose only learnable parameters can be expressed as a set of matrices and vectors. This should include almost every neural network.
