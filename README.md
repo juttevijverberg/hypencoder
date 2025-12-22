@@ -26,9 +26,11 @@ The core code, data, and models are now available. This means you can train your
 gh repo clone jfkback/hypencoder-paper
 ```
 
-### Install locally with pip
+### Make a conda environment and install the requirements
 ```
-pip install -e /hypencoder-paper
+conda create --name hype python=3.10 -y
+source activate hype-faiss
+pip install -r requirements.txt
 ```
 
 ### Required Libraries
@@ -53,6 +55,9 @@ To train a model you will need:
 - `fire`
 - `omegaconf`
 - `datasets`
+
+To use Faiss you will need an additional library:
+- `faiss-gpu`
 
 ## Quick Start
 #### Using the pretrained Hypencoders as stand-alone models
@@ -164,22 +169,16 @@ Evaluation is done automatically when `hypencoder_cb/inference/retrieve.py` is c
 }
 ```
 
-## Model checkpoints
-Additional model checkpoints have been made available:  
+#### Custom Q-Nets
+In the paper we only looked at simple linear q-nets but in theory any type of neural network can be used. The code in this repository is flexible enough to support any q-net whose only learnable parameters can be expressed as a set of matrices and vectors. This should include almost every neural network.
 
-[TOT Models](https://drive.google.com/drive/folders/1iMwgvoTbae9AY5IRXjf-UIwCLMGLaJL1?usp=drive_link)
-
-[FollowIR Models](https://drive.google.com/drive/folders/13oGWmJCuQPe-xnMiiqi2Kk0qyguJLE87?usp=drive_link)
-
-[BE-Baseline](https://drive.google.com/drive/folders/1iZVeZmP66e9NADY6UMUqq3SXfrnU1fqY?usp=drive_link)
+To build a custom q-net you will need to make a new q-net converter similar to the existing one `RepeatedDenseBlockConverter`. This converter must have the following functions and properties:
+1. `weight_shapes` should be a property which is a list of tuples indicating the size of the weight matrices.
+2. `bias_shapes` should be a property which is a list of tuples indicating the size of the bias vectors.
+3. `__call__` which takes three arguments `matrices`, `vectors`,  and `is_training`. See `RepeatedDenseBlockConverter` for details on the type of these arguments. This method should
+return a callable object which excepts a torch tensor in the shape (num_queries, num_items_per_query, hidden_dim) and returns a tensor with the shape (num_queries, num_items_per_query, 1) which contains the relevance score for each query and associated item.
 
 ## Extension: Retrieve with Faiss
-To run BE-Base with Faiss, use the BE-Base checkpoint above. Faiss should be installled in the environment, when using a `conda` environment that works as follows:
-
-```
-conda install -c pytorch faiss-gpu
-```
-
 BE-Base evaluation is performed without a separate encoding script, the dataset is encoded on-the-fly and performs optimized Faiss retrieval: 
 ```
 export SAVE_ENCODED_DOCS_PATH="$HOME/hypencoder/encoded_items/be_base/trec-tot"
@@ -192,16 +191,6 @@ python scripts/evaluate_bebase.py \
     --save_encoded_docs_path="$SAVE_ENCODED_DOCS_PATH"
 ```
 This script uses the tokenizer with the checkpoint, encodes both documents and queries using the BE-base dual encoder, and reports standard IR metrics via `ir_measures`. If you already encoded the corpus via `hypencoder_cb/inference/encode.py`, pass `--encoded_docs_path=/path/to/encoded/docs` to skip re-encoding and load the DocList artifacts directly. To persist freshly encoded documents for reuse, add `--save_encoded_docs_path=/path/to/save/doclist` and the script will export a DocList compatible with `load_encoded_items_from_disk`.
-
-#### Custom Q-Nets
-In the paper we only looked at simple linear q-nets but in theory any type of neural network can be used. The code in this repository is flexible enough to support any q-net whose only learnable parameters can be expressed as a set of matrices and vectors. This should include almost every neural network.
-
-To build a custom q-net you will need to make a new q-net converter similar to the existing one `RepeatedDenseBlockConverter`. This converter must have the following functions and properties:
-1. `weight_shapes` should be a property which is a list of tuples indicating the size of the weight matrices.
-2. `bias_shapes` should be a property which is a list of tuples indicating the size of the bias vectors.
-3. `__call__` which takes three arguments `matrices`, `vectors`,  and `is_training`. See `RepeatedDenseBlockConverter` for details on the type of these arguments. This method should
-return a callable object which excepts a torch tensor in the shape (num_queries, num_items_per_query, hidden_dim) and returns a tensor with the shape (num_queries, num_items_per_query, 1) which contains the relevance score for each query and associated item.
-
 
 ## Training
 To train a model take a look at the training readme in `/train`.
@@ -217,6 +206,15 @@ We have uploaded the models from our experiments to Huggingface Hub. See quick s
 | [jfkback/hypencoder.6_layer](https://huggingface.co/jfkback/hypencoder.6_layer) |          6        |
 | [jfkback/hypencoder.8_layer](https://huggingface.co/jfkback/hypencoder.8_layer) |          8        |
 </center>
+
+## Model checkpoints
+Additional model checkpoints have been made available:  
+
+[TOT Models](https://drive.google.com/drive/folders/1iMwgvoTbae9AY5IRXjf-UIwCLMGLaJL1?usp=drive_link)
+
+[FollowIR Models](https://drive.google.com/drive/folders/13oGWmJCuQPe-xnMiiqi2Kk0qyguJLE87?usp=drive_link)
+
+[BE-Baseline](https://drive.google.com/drive/folders/1iZVeZmP66e9NADY6UMUqq3SXfrnU1fqY?usp=drive_link)
 
 
 ## Data
@@ -242,9 +240,6 @@ The artifacts from our experiments are in the table below:
 The above artifacts are stored on Google Drive, if you want to download them without going through the UI you can, but I suggest looking at [gdown](https://github.com/wkentaro/gdown) or the Google Drive interface provided by [rclone](https://rclone.org/drive).
 
 We have also uploaded all the run files for our experiments (FollowIR coming soon). They are a custom JSONL format, but they should be pretty straightforward to convert to any other format. We may also add standard TREC run files in future if there is interest.
-
-## Collaboration
-If you are interested in working on new projects around Hypencoder or other areas of Information Retrieval/NLP and would like to collaborate feel welcome to reach out via [email](jkillingback@umass.edu) or [X](https://x.com/Julian_a42f9a):
 
 
 ## Citation
