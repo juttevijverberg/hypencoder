@@ -22,7 +22,7 @@ The core code, data, and models are now available. This means you can train your
 ## Installation
 ### Copy the Repo
 ```
-gh repo clone jfkback/hypencoder-paper
+git clone https://github.com/juttevijverberg/hypencoder.git
 ```
 
 ### Make a conda environment and install the requirements
@@ -167,6 +167,9 @@ Evaluation is done automatically when `hypencoder_cb/inference/retrieve.py` is c
     ...
 }
 ```
+
+#### Replications
+For an overview of the exact `IR` datasets used in the original paper and our reproduction, see `replication_commands.md` in this repository.
 
 #### Custom Q-Nets
 In the paper we only looked at simple linear q-nets but in theory any type of neural network can be used. The code in this repository is flexible enough to support any q-net whose only learnable parameters can be expressed as a set of matrices and vectors. This should include almost every neural network.
