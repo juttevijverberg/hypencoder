@@ -165,7 +165,7 @@ Evaluation is done automatically when `hypencoder_cb/inference/retrieve.py` is c
 ```
 
 ## Model checkpoints
-Additional model checkpoints have been made available:
+Additional model checkpoints have been made available:  
 
 [TOT Models](https://drive.google.com/drive/folders/1iMwgvoTbae9AY5IRXjf-UIwCLMGLaJL1?usp=drive_link)
 
