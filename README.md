@@ -187,7 +187,7 @@ BE-Base evaluation is performed without a separate encoding script, the dataset 
 export SAVE_ENCODED_DOCS_PATH="$HOME/hypencoder/encoded_items/be_base/trec-tot"
 mkdir -p "$SAVE_ENCODED_DOCS_PATH"
 
-python scripts/evaluate_bebase.py \
+python scripts/evaluate_bebase_faiss.py \
     --model_name_or_path=[path_to_be_base_checkpoint] \
     --ir_dataset_name=trec-tot/2023/dev \
     --output_dir="$HOME/hypencoder/retrieval_outputs/be_base/trec-tot" \
