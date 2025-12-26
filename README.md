@@ -1,4 +1,4 @@
-# Hypencoder
+# Hypencoder Reproduction
 This repository was adapted from the repo for the original paper, "Hypencoder: Hypernetworks for Information Retrieval" by Killingback et al. Link: https://arxiv.org/pdf/2502.05364
 
 The core code, data, and models are now available. This means you can train your own Hypencoder, use a pre-trained Hypencoder off-the-shelf, and reproduce the major results from the paper exactly.
@@ -180,21 +180,6 @@ To build a custom q-net you will need to make a new q-net converter similar to t
 3. `__call__` which takes three arguments `matrices`, `vectors`,  and `is_training`. See `RepeatedDenseBlockConverter` for details on the type of these arguments. This method should
 return a callable object which excepts a torch tensor in the shape (num_queries, num_items_per_query, hidden_dim) and returns a tensor with the shape (num_queries, num_items_per_query, 1) which contains the relevance score for each query and associated item.
 
-## Extensions
-### Retrieve with Faiss
-BE-Base evaluation is performed without a separate encoding script, the dataset is encoded on-the-fly and performs optimized Faiss retrieval: 
-```
-export SAVE_ENCODED_DOCS_PATH="$HOME/hypencoder/encoded_items/be_base/trec-tot"
-mkdir -p "$SAVE_ENCODED_DOCS_PATH"
-
-python scripts/evaluate_bebase_faiss.py \
-    --model_name_or_path=[path_to_be_base_checkpoint] \
-    --ir_dataset_name=trec-tot/2023/dev \
-    --output_dir="$HOME/hypencoder/retrieval_outputs/be_base/trec-tot" \
-    --save_encoded_docs_path="$SAVE_ENCODED_DOCS_PATH"
-```
-This script uses the tokenizer with the checkpoint, encodes both documents and queries using the BE-base dual encoder, and reports standard IR metrics via `ir_measures`. If you already encoded the corpus via `hypencoder_cb/inference/encode.py`, pass `--encoded_docs_path=/path/to/encoded/docs` to skip re-encoding and load the DocList artifacts directly. To persist freshly encoded documents for reuse, add `--save_encoded_docs_path=/path/to/save/doclist` and the script will export a DocList compatible with `load_encoded_items_from_disk`.
-
 ## Training
 To train a model take a look at the training readme in `/train`.
 
@@ -228,6 +213,40 @@ The data used for our experiments is in the table below:
 |:------------------:|------------------|
 | [jfkback/hypencoder-msmarco-training-dataset](https://huggingface.co/datasets/jfkback/hypencoder-msmarco-training-dataset) | Main training data used to train all our Hypencoder models and BE-base |
 </center>
+
+## Extensions
+### Retrieve with Faiss
+BE-Base evaluation is performed without a separate encoding script, the dataset is encoded on-the-fly and performs optimized Faiss retrieval: 
+```
+export SAVE_ENCODED_DOCS_PATH="$HOME/hypencoder/encoded_items/be_base/trec-tot"
+mkdir -p "$SAVE_ENCODED_DOCS_PATH"
+
+python scripts/evaluate_bebase_faiss.py \
+    --model_name_or_path=[path_to_be_base_checkpoint] \
+    --ir_dataset_name=trec-tot/2023/dev \
+    --output_dir="$HOME/hypencoder/retrieval_outputs/be_base/trec-tot" \
+    --save_encoded_docs_path="$SAVE_ENCODED_DOCS_PATH"
+```
+This script uses the tokenizer with the checkpoint, encodes both documents and queries using the BE-base dual encoder, and reports standard IR metrics via `ir_measures`. If you already encoded the corpus via `hypencoder_cb/inference/encode.py`, pass `--encoded_docs_path=/path/to/encoded/docs` to skip re-encoding and load the DocList artifacts directly. To persist freshly encoded documents for reuse, add `--save_encoded_docs_path=/path/to/save/doclist` and the script will export a DocList compatible with `load_encoded_items_from_disk`.
+
+### Fine-tune Hypencoder Reproduction
+```
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/finetune_FollowIR.yaml
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/finetune_TOT.yaml
+```
+
+### Fine-tune Alternative Encoders
+```
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/contriever_freeze_encoder.yaml 
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/contriever_nofreeze_encoder.yaml
+
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/tasb_freeze_encoder.yaml
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/tasb_nofreeze_encoder.yaml
+
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/retro_freeze_encoder.yaml
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/retro_nofreeze_encoder.yaml
+```
+
 
 ## Artifacts
 The artifacts from our experiments are in the table below:
