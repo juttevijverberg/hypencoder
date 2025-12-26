@@ -206,13 +206,21 @@ Additional model checkpoints have been made available:
 
 
 ## Data
-The data used for our experiments is in the table below:
+The data of the original paper experiments is in the table below:
 <center>
 
 | Link | Description |
 |:------------------:|------------------|
 | [jfkback/hypencoder-msmarco-training-dataset](https://huggingface.co/datasets/jfkback/hypencoder-msmarco-training-dataset) | Main training data used to train all our Hypencoder models and BE-base |
 </center>
+
+The data for fine-tuning on hard tasks can be obtained through:
+```
+python script/load_data.py \
+--data FollowIR_train \ #Options: ["FollowIR_train", "FollowIR_test", "TOT_train", "TOT_test", "DL_HARD_test"]
+--dest data/followir/train
+
+```
 
 ## Extensions
 ### Retrieve with Faiss
