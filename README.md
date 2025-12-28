@@ -255,6 +255,19 @@ python hypencoder_cb/train/train.py hypencoder_cb/train/configs/retro_freeze_enc
 python hypencoder_cb/train/train.py hypencoder_cb/train/configs/retro_nofreeze_encoder.yaml
 ```
 
+### Adversarial Attacks
+```
+python hypencoder_cb/inference/retrieve_multiple.py \
+    --model_name_or_path=$MODEL_NAME_OR_PATH \
+    --encoded_item_path=$ENCODING_PATH \
+    --base_data_dir=$BASE_DATA_DIR \
+    --base_output_dir=$BASE_OUTPUT_DIR \
+    --attack_types "['synonym', 'paraphrase', 'naturality', 'mispelling', 'ordering']" \
+    --qrel_json=$QREL_JSON \
+    --query_id_key="id" \
+    --query_text_key="text" \
+    --query_max_length=64
+```
 
 ## Artifacts
 The artifacts from our experiments are in the table below:
