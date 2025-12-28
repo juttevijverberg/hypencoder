@@ -268,6 +268,33 @@ python hypencoder_cb/inference/retrieve_multiple.py \
     --query_text_key="text" \
     --query_max_length=64
 ```
+For combining the results of TREC 2019 and 2020 run:
+```
+ATTACK_TYPES=("mispelling" "naturality" "ordering" "paraphrase" "synonym")
+# ATTACK_TYPES=("regular")
+
+BASE_DIR="$HOME/hypencoder/retrieval_outputs"
+SCRIPT_DIR="$HOME/hypencoder/scripts"
+
+for ATTACK in "${ATTACK_TYPES[@]}"; do
+  METRICS19="$BASE_DIR/adversarial/be_base/trec-dl-2019/${ATTACK}/metrics/per_query_metrics.json"
+  METRICS20="$BASE_DIR/adversarial/be_base/trec-dl-2020/${ATTACK}/metrics/per_query_metrics.json"
+  OUT_DIR="$BASE_DIR/adversarial/be_base/trec-dl-19-20/${ATTACK}/metrics"
+  OUT_FILE="$OUT_DIR/aggregated_metrics.json"
+
+  echo "Aggregating metrics for attack: ${ATTACK}"
+  echo "  2019: $METRICS19"
+  echo "  2020: $METRICS20"
+  echo "  Out : $OUT_FILE"
+
+  mkdir -p "$OUT_DIR"
+
+  python "$SCRIPT_DIR/aggregate_trec_metrics.py" \
+    --metrics1_path "$METRICS19" \
+    --metrics2_path "$METRICS20" \
+    --output_path "$OUT_FILE"
+done
+```
 
 ## Artifacts
 The artifacts from our experiments are in the table below:
