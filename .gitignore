@@ -1,7 +1,8 @@
 # Added in reproducibility study
-*outputs/
-*data/
-*models/
+**/outputs/
+**/retrieval_outputs/
+**/data/
+**/models/
 .vscode
 /wandb
 /node_modules
