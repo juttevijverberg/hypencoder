@@ -2,6 +2,13 @@
 *outputs/
 *data/
 *models/
+.vscode
+/wandb
+/node_modules
+/encoded_items
+/.ir_datasets
+/neighbor_graph
+test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -165,10 +172,3 @@ cython_debug/
 #.idea/
 
 
-.vscode
-/wandb
-/node_modules
-/encoded_items
-/.ir_datasets
-/neighbor_graph
-test.py
