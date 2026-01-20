@@ -14,7 +14,6 @@ model_config:
     model_name_or_path: facebook/contriever-msmarco
     freeze_transformer: false
     pooling_type: mean
-    normalize_documents: true
   shared_encoder: true
   loss_type:
     - margin_mse

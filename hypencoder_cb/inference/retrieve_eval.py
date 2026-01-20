@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Union
-import os
 
+import os
 import fire
 import torch
 from tqdm import tqdm
@@ -15,6 +15,7 @@ from hypencoder_cb.inference.shared import (
     retrieve_for_ir_dataset_queries,
     retrieve_for_jsonl_queries,
 )
+from hypencoder_cb.modeling.hypencoder import HypencoderDualEncoder
 from hypencoder_cb.modeling.hypencoder_bebase import TextDualEncoder
 from hypencoder_cb.utils.data_utils import (
     load_qrels_from_ir_datasets,
@@ -29,6 +30,157 @@ from hypencoder_cb.utils.iterator_utils import batchify_slicing
 from hypencoder_cb.utils.torch_utils import dtype_lookup
 
 
+class HypencoderRetriever(BaseRetriever):
+
+    def __init__(
+        self,
+        model_name_or_path: str,
+        encoded_item_path: str,
+        batch_size: int = 100_000,
+        device: str = "cuda",
+        dtype: Union[torch.dtype, str] = "float32",
+        query_model_kwargs: Optional[Dict] = None,
+        put_all_embeddings_on_device: bool = True,
+        query_max_length: int = 32,
+        ignore_same_id: bool = False,
+    ) -> None:
+        """
+        Args:
+            model_name_or_path (str): Name or path to a HypencoderDualEncoder
+                checkpoint.
+            encoded_item_path (str): Path to the encoded items.
+            batch_size (int, optional): Batch sized used for scoring. Defaults
+                to 100,000.
+            device (str, optional): The device to use. Defaults to "cuda".
+            dtype (Union[torch.dtype, str], optional): The dtype to use for the
+                model and embedded items. Options are "fp16", "fp32", and
+                "bf16". Defaults to "float32".
+            query_model_kwargs (Optional[Dict], optional): Key-word arguments
+                passed to the q-net in addition to the item representations.
+                Defaults to None.
+            put_all_embeddings_on_device (bool, optional): Whether all
+                embeddings should be put on the device. If False, all
+                embeddings are kept in RAM instead of in VRAM. It is faster
+                with this set to True, but it requires more GPU memory.
+                Defaults to True.
+            query_max_length (int, optional): Maximum length of the query.
+                Defaults to 32.
+            ignore_same_id (bool, optional): Whether to ignore retrievals
+                with the same ID as the query. This is only relevant for
+                certain datasets. Defaults to False.
+        """
+        if isinstance(dtype, str):
+            dtype = dtype_lookup(dtype)
+
+        self.dtype = dtype
+        self.device = device
+        self.batch_size = batch_size
+        self.encoded_item_path = encoded_item_path
+        self.query_max_length = query_max_length
+        self.ignore_same_id = ignore_same_id
+        self.put_on_device = put_all_embeddings_on_device
+
+        if query_model_kwargs is None:
+            query_model_kwargs = {}
+
+        self.query_model_kwargs = query_model_kwargs
+
+        self.model = (
+            HypencoderDualEncoder.from_pretrained(model_name_or_path)
+            .to(device, dtype=self.dtype)
+            .eval()
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+
+        print("Started loading encoded items...")
+        encoded_items = load_encoded_items_from_disk(
+            encoded_item_path,
+        )
+
+        self.encoded_item_embeddings = torch.stack(
+            [
+                torch.tensor(x.representation, dtype=self.dtype)
+                for x in tqdm(encoded_items)
+            ]
+        )
+
+        if self.put_on_device:
+            self.encoded_item_embeddings = self.encoded_item_embeddings.to(
+                self.device
+            )
+
+        self.encoded_item_ids = [x.id for x in tqdm(encoded_items)]
+        self.encoded_item_texts = [x.text for x in tqdm(encoded_items)]
+
+    def retrieve(self, query: TextQuery, top_k: int) -> List[Item]:
+        tokenized_query = self.tokenizer(
+            query.text,
+            return_tensors="pt",
+            padding="longest",
+            truncation=True,
+            max_length=self.query_max_length,
+        ).to(self.device)
+
+        with torch.no_grad():
+            query_output = self.model.query_encoder(
+                input_ids=tokenized_query["input_ids"],
+                attention_mask=tokenized_query["attention_mask"],
+            )
+
+        query_model = query_output.representation
+
+        num_batches = (
+            len(self.encoded_item_embeddings) // self.batch_size
+        ) + 1
+
+        top_k_indices = torch.full((top_k * num_batches,), -1)
+        top_k_scores = torch.full((top_k * num_batches,), -float("inf"))
+
+        for batch_index, batch_item_embeddings in enumerate(
+            batchify_slicing(self.encoded_item_embeddings, self.batch_size)
+        ):
+            if not self.put_on_device:
+                batch_item_embeddings = batch_item_embeddings.to(self.device)
+
+            batch_item_embeddings = batch_item_embeddings.unsqueeze(0)
+
+            similarity_matrix = query_model(
+                batch_item_embeddings, **self.query_model_kwargs
+            ).squeeze()
+
+            values, indices = torch.topk(similarity_matrix, top_k, dim=0)
+            indices = indices.squeeze(0).cpu()
+            values = values.squeeze(0).cpu()
+
+            top_k_indices[batch_index * top_k : (batch_index + 1) * top_k] = (
+                indices + (batch_index * self.batch_size)
+            )
+            top_k_scores[batch_index * top_k : (batch_index + 1) * top_k] = (
+                values
+            )
+
+        final_values, indices = torch.topk(top_k_scores, top_k, dim=0)
+        final_indices = top_k_indices[indices]
+
+        items = []
+        for item_idx, score in zip(final_indices, final_values):
+            if (
+                self.ignore_same_id
+                and query.id == self.encoded_item_ids[item_idx]
+            ):
+                continue
+
+            items.append(
+                Item(
+                    text=self.encoded_item_texts[item_idx],
+                    id=self.encoded_item_ids[item_idx],
+                    score=score.item(),
+                    type="hypencoder_retriever",
+                )
+            )
+
+        return items
+
 class SimpleTransformerEncoder(torch.nn.Module):
     """A simple encoder wrapper for standard Hugging Face transformer models.
     
@@ -36,15 +188,22 @@ class SimpleTransformerEncoder(torch.nn.Module):
     rather than custom TextDualEncoder checkpoints.
     """
     
-    def __init__(self, model_name_or_path: str, pooling_type: str = "cls"):
+    def __init__(self, model_name_or_path: str, pooling_type: str = "cls", l2_normalize: bool = False):
         super().__init__()
         self.transformer = AutoModel.from_pretrained(model_name_or_path)
         self.pooling_type = pooling_type
+        self.l2_normalize = l2_normalize
+        
+    # def mean_pool(self, last_hidden_state, attention_mask):
+    #     return last_hidden_state.sum(dim=1) / attention_mask.sum(
+    #         dim=1, keepdim=True
+    #     )
 
     def mean_pool(self, last_hidden_state, attention_mask):
-        last_hidden_state = last_hidden_state.masked_fill(~attention_mask[..., None].bool(), 0.)
-        embeddings = last_hidden_state.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
-        return embeddings
+        mask = attention_mask.unsqueeze(-1).type_as(last_hidden_state)  # [B,L,1]
+        summed = (last_hidden_state * mask).sum(dim=1)
+        denom = mask.sum(dim=1).clamp(min=1e-9)
+        return summed / denom
     
     def cls_pool(self, last_hidden_state, attention_mask):
         return last_hidden_state[:, 0]
@@ -60,6 +219,9 @@ class SimpleTransformerEncoder(torch.nn.Module):
             pooled = self.cls_pool(output.last_hidden_state, attention_mask)
         else:
             raise ValueError(f"Unknown pooling type: {self.pooling_type}")
+
+        if self.l2_normalize:
+            pooled = torch.nn.functional.normalize(pooled, dim=-1)
         
         # Return a simple object with representation attribute
         from types import SimpleNamespace
@@ -90,7 +252,6 @@ def _is_custom_checkpoint(model_path: str) -> bool:
     # and doesn't exist locally, so it's not a custom checkpoint
     return False
 
-
 class BiEncoderRetriever(BaseRetriever):
 
     def __init__(
@@ -104,7 +265,7 @@ class BiEncoderRetriever(BaseRetriever):
         query_max_length: int = 32,
         ignore_same_id: bool = False,
         pooling_type: str = "cls",
-        similarity_metric: str = "dot_product",
+        l2_normalize: bool = False,
     ) -> None:
         """
         Args:
@@ -142,8 +303,6 @@ class BiEncoderRetriever(BaseRetriever):
         self.query_max_length = query_max_length
         self.ignore_same_id = ignore_same_id
         self.put_on_device = put_all_embeddings_on_device
-        self.similarity_metric = similarity_metric
-
 
         # Detect whether to use custom TextDualEncoder or simple HF model
         is_custom = _is_custom_checkpoint(model_name_or_path)
@@ -159,7 +318,7 @@ class BiEncoderRetriever(BaseRetriever):
         else:
             print(f"Loading standard HuggingFace model from {model_name_or_path}")
             self.query_encoder = (
-                SimpleTransformerEncoder(model_name_or_path, pooling_type=pooling_type)
+                SimpleTransformerEncoder(model_name_or_path, pooling_type=pooling_type, l2_normalize=l2_normalize)
                 .to(device, dtype=self.dtype)
                 .eval()
             )
@@ -222,16 +381,9 @@ class BiEncoderRetriever(BaseRetriever):
             # query_embedding: [1, hidden_dim]
             # batch_item_embeddings: [batch_size, hidden_dim]
             # similarity: [1, batch_size]
-            if self.similarity_metric == "dot_product":
-                similarity_matrix = torch.matmul(
-                    query_embedding, batch_item_embeddings.T
-                )
-            elif self.similarity_metric == "cosine":
-                query_norm = torch.nn.functional.normalize(query_embedding, dim=-1)
-                item_norm = torch.nn.functional.normalize(batch_item_embeddings, dim=-1)
-                similarity_matrix = torch.matmul(
-                    query_norm, item_norm.T
-                )
+            similarity_matrix = torch.matmul(
+                query_embedding, batch_item_embeddings.T
+            )
 
             values, indices = torch.topk(
                 similarity_matrix.squeeze(0), 
@@ -343,7 +495,6 @@ def do_retrieval_shared(
     include_content: bool = True,
     do_eval: bool = True,
     metric_names: Optional[List[str]] = None,
-    similarity_metric: str = "dot_product",
 ) -> None:
     """Does retrieval and optionally evaluation.
 
@@ -405,9 +556,6 @@ def do_retrieval_shared(
         **retriever_kwargs
     )
 
-    print("Retriever similarity_metric:", retriever.similarity_metric)
-    print("retriever args:", retriever_kwargs)
-
     if query_jsonl is not None:
         retrieve_for_jsonl_queries(
             retriever=retriever,
@@ -458,15 +606,12 @@ def do_retrieval(
     do_eval: bool = True,
     metric_names: Optional[List[str]] = None,
     ignore_same_id: bool = False,
-    pooling_type: str = "cls",
-    similarity_metric: str = "dot_product",
+    model_type: str = "hypencoder_dual_encoder",
 ) -> None:
-    """Does retrieval and optionally evaluation for standard bi-encoder models.
+    """Does retrieval and optionally evaluation.
 
     Args:
-        model_name_or_path (str): Name or path to a TextDualEncoder
-            checkpoint (standard bi-encoder like be_base) or a Hugging Face
-            model ID (like 'sebastian-hofstaetter/distilbert-dot-tas_b-b256-msmarco').
+        model_name_or_path (str): Name or path to a HypencoderDualEncoder or TextDualEncodercheckpoint.
         encoded_item_path (str): Path to the encoded items.
         output_dir (str): Path to the output directory which will contain the
             retrieval results and optionally the evaluation results.
@@ -505,9 +650,6 @@ def do_retrieval(
         ignore_same_id (bool, optional): Whether to ignore retrievals with the
             same ID as the query. This is only relevant for certain datasets.
             Defaults to False.
-        pooling_type (str, optional): Pooling type for simple transformer
-            models loaded from HuggingFace ("cls" or "mean"). Only used when
-            loading standard HF models, not custom checkpoints. Defaults to "cls".
 
     Raises:
         ValueError: If both `query_jsonl` and `ir_dataset_name` are provided.
@@ -516,9 +658,10 @@ def do_retrieval(
     """
 
     retriever_kwargs = retriever_kwargs if retriever_kwargs is not None else {}
+    retriever = BiEncoderRetriever if model_type == "text_dual_encoder" else HypencoderRetriever
 
     do_retrieval_shared(
-        retriever_cls=BiEncoderRetriever,
+        retriever_cls=retriever,
         retriever_kwargs=dict(
             model_name_or_path=model_name_or_path,
             encoded_item_path=encoded_item_path,
@@ -526,8 +669,6 @@ def do_retrieval(
             batch_size=batch_size,
             query_max_length=query_max_length,
             ignore_same_id=ignore_same_id,
-            pooling_type=pooling_type,
-            similarity_metric=similarity_metric,
             **retriever_kwargs,
         ),
         output_dir=output_dir,
@@ -540,9 +681,8 @@ def do_retrieval(
         include_content=include_content,
         do_eval=do_eval,
         metric_names=metric_names,
-        similarity_metric=similarity_metric,
     )
 
 
 if __name__ == "__main__":
-    fire.Fire(do_retrieval)
+    fire.Fire(do_eval_and_pretty_print)

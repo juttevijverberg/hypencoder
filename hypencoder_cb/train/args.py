@@ -22,6 +22,8 @@ class HypencoderModelConfig:
 
     model_type: str = "hypencoder"
     shared_encoder: bool = False
+    
+    hypernetwork_checkpoint_path: Optional[str] = None
 
 
 @dataclass

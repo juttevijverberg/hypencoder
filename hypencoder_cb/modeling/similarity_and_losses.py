@@ -354,3 +354,101 @@ class HypencoderCrossEntropyLoss(CrossEntropyLoss):
             )
 
         return similarity
+
+
+class BiEncoderMarginMSELoss(MarginMSELoss):
+    """Margin MSE Loss for bi-encoder models using dot product similarity."""
+
+    def _get_similarity(
+        self,
+        query_output: EncoderOutput,
+        passage_output: EncoderOutput,
+        **kwargs,
+    ) -> torch.Tensor:
+        query_embeddings = query_output.representation
+        passage_embeddings = passage_output.representation
+
+        num_queries = query_embeddings.shape[0]
+        num_passages = passage_embeddings.shape[0]
+        num_passages_per_query = num_passages // num_queries
+
+        # Reshape passages to (num_queries, num_passages_per_query, dim)
+        passage_embeddings = passage_embeddings.view(
+            num_queries, num_passages_per_query, -1
+        )
+
+        # Compute similarity: (num_queries, num_passages_per_query)
+        similarity = torch.einsum("qd,qpd->qp", query_embeddings, passage_embeddings)
+
+        return pos_neg_triplets_from_similarity(similarity)
+
+    def forward(
+        self,
+        query_output: EncoderOutput,
+        passage_output: EncoderOutput,
+        labels: Optional[torch.Tensor] = None,
+    ) -> SimilarityAndLossOutput:
+        loss = torch.tensor(0.0, device=passage_output.representation.device)
+        similarity = self._get_similarity(query_output, passage_output)
+        loss += self.scale * self._loss(similarity, labels)
+
+        return SimilarityAndLossOutput(similarity=similarity, loss=loss)
+
+
+class BiEncoderCrossEntropyLoss(CrossEntropyLoss):
+    """Cross Entropy Loss for bi-encoder models using dot product similarity."""
+
+    def __init__(
+        self,
+        use_cross_device_negatives: bool = False,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.use_cross_device_negatives = use_cross_device_negatives
+
+    def _get_similarity(
+        self,
+        query_output: EncoderOutput,
+        passage_output: EncoderOutput,
+        **kwargs,
+    ) -> torch.Tensor:
+        query_embeddings = query_output.representation
+        passage_embeddings = passage_output.representation
+
+        if self.use_in_batch_negatives:
+            if self.use_cross_device_negatives:
+                raise NotImplementedError(
+                    "Cross device negatives not yet implemented for BiEncoder."
+                )
+
+            if self.only_use_first_item:
+                num_passages = passage_embeddings.shape[0]
+                num_queries = query_embeddings.shape[0]
+                passages_per_query = num_passages // num_queries
+
+                indices = (
+                    torch.arange(
+                        num_queries,
+                        device=passage_embeddings.device,
+                        dtype=torch.long,
+                    )
+                    * passages_per_query
+                )
+                passage_embeddings = passage_embeddings[indices]
+
+            # Full in-batch similarity: (num_queries, num_passages)
+            similarity = torch.matmul(query_embeddings, passage_embeddings.T)
+        else:
+            num_queries = query_embeddings.shape[0]
+            num_passages = passage_embeddings.shape[0]
+            num_passages_per_query = num_passages // num_queries
+
+            # Reshape passages to (num_queries, num_passages_per_query, dim)
+            passage_embeddings = passage_embeddings.view(
+                num_queries, num_passages_per_query, -1
+            )
+
+            # Compute similarity: (num_queries, num_passages_per_query)
+            similarity = torch.einsum("qd,qpd->qp", query_embeddings, passage_embeddings)
+
+        return similarity

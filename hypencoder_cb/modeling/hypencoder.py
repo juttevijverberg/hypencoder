@@ -16,6 +16,8 @@ from hypencoder_cb.modeling.shared import (
 from hypencoder_cb.modeling.similarity_and_losses import (
     HypencoderCrossEntropyLoss,
     HypencoderMarginMSELoss,
+    BiEncoderCrossEntropyLoss,
+    BiEncoderMarginMSELoss,
 )
 
 
@@ -321,7 +323,7 @@ class TextEncoderConfig(PretrainedConfig):
         model_name_or_path: str = "",
         pooling_type: str = "cls",
         freeze_transformer: bool = False,
-        normalize_documents: bool = True,
+        normalize_documents: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -433,3 +435,20 @@ class TextDualEncoder(BaseDualEncoder):
 
         if config.shared_encoder:
             self.passage_encoder = self.query_encoder
+
+    def _get_similarity_loss(self, config: BaseDualEncoderConfig):
+        self.similarity_losses = []
+
+        for loss_type, loss_kwargs in zip(
+            config.loss_type, config.loss_kwargs
+        ):
+            if loss_type == "margin_mse":
+                self.similarity_losses.append(
+                    BiEncoderMarginMSELoss(**loss_kwargs)
+                )
+            elif loss_type == "cross_entropy":
+                self.similarity_losses.append(
+                    BiEncoderCrossEntropyLoss(**loss_kwargs)
+                )
+            else:
+                raise ValueError(f"Unknown loss type: {loss_type}")

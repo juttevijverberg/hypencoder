@@ -104,7 +104,9 @@ def calculate_metrics_to_file(
         run, qrels, metric_names=metric_names
     )
 
-    Path(output_folder).mkdir(parents=True, exist_ok=True)
+    #Path(output_folder).mkdir(parents=True, exist_ok=True)
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
 
     aggregated_filename = output_folder / "aggregated_metrics.json"
     per_query_filename = output_folder / "per_query_metrics.json"
@@ -164,7 +166,8 @@ def pretty_print_standard_format(
         with open(output_file, "w") as f:
             for line in reader:
                 query_id = line["query"]["id"]
-                query_text = line["query"]["content"]
+                #query_text = line["query"]["content"]
+                query_text = line["query"].get("content", "N/A")
                 f.write(f"Query: {query_text} ({query_id})\n")
                 for i, item in enumerate(
                     sorted(
@@ -174,7 +177,7 @@ def pretty_print_standard_format(
                     )
                 ):
                     item_id = item["id"]
-                    item_text = item["content"]
+                    item_text = item.get("content", "N/A")
                     item_score = item[score_key]
                     f.write(
                         f"\t{i + 1}. {item_text} ({item_id}) - {item_score}\n"
@@ -217,70 +220,6 @@ def calculate_pmrr(original_run, new_run, changed_qrels):
     qid_wise = changes_df.groupby("qid").agg({"p-MRR": "mean"})
     return qid_wise["p-MRR"].mean()
 
-
-def evaluate_p_mrr_change(
-    qrels: Dict,
-    results: dict[str, dict[str, float]],
-    changed_qrels: dict[str, list[str]],
-    k_values: list[int],
-) -> dict[str, float | dict[str, float]]:
-    """Computes the scores needed for FollowIR datasets.
-
-    Including p-MRR (measuring change in instruction) and details about the original instruction run and changed instruction run. Used by IntructionRetrieval/Reranking tasks.
-
-    Args:
-        qrels: Ground truth relevance judgments for the queries
-        results: Predicted relevance scores for the queries
-        changed_qrels: A mapping from query IDs (without -og or -changed) to a list of document IDs that have changed relevance
-        k_values: The k values for which to compute the scores
-
-    Returns:
-        A dictionary with the scores, including "p-MRR", "og" and "changed" keys.
-    """
-    followir_scores = defaultdict(dict)
-
-    qrels_sep = {
-        "og": {k: v for k, v in qrels.items() if k.endswith("-og")},
-        "changed": {k: v for k, v in qrels.items() if not k.endswith("-og")},
-    }
-
-    original_run = {}
-    new_run = {}
-    # make original run from the results file with all "-og" items only and vice versa
-    for qid, docs in results.items():
-        if qid.endswith("-og"):
-            original_run[qid] = docs
-        else:
-            new_run[qid] = docs
-
-    p_mrr = calculate_pmrr(original_run, new_run, changed_qrels)
-    followir_scores["p-MRR"] = p_mrr
-
-    # unfortunately, have to re-compute scores here to get only og and changed scores
-    followir_scores["og"] = {}
-    followir_scores["changed"] = {}
-    for name, group in [("og", original_run), ("changed", new_run)]:
-        (
-            scores,
-            ndcg,
-            _map,
-            recall,
-            precision,
-            naucs,
-            avg_mrr,
-            naucs_mrr,
-            cv_recall,
-        ) = calculate_retrieval_scores(group, qrels_sep[name], k_values)
-        # add these to the followir_scores with name prefix
-        scores_dict = make_score_dict(
-            ndcg, _map, recall, precision, naucs, avg_mrr, naucs_mrr, cv_recall, {}
-        )
-        for key, value in scores_dict.items():
-            followir_scores[name][key] = value
-
-    return followir_scores
-
-
 def rank_score(x: dict[str, float]) -> float:
     if x["og_rank"] >= x["new_rank"]:
         return ((1 / x["og_rank"]) / (1 / x["new_rank"])) - 1
@@ -312,20 +251,20 @@ def compute_followir_p_mrr(
     format expected by calculate_pmrr (which expects "-og" and "-changed" suffixes).
     """
     # Combine qrels with "-og" and "-changed" suffixes to match calculate_pmrr expectations
-    combined_qrels = {}
-    for qid, docs in orig_qrels.items():
-        combined_qrels[qid + "-og"] = docs
-    for qid, docs in new_qrels.items():
-        combined_qrels[qid + "-changed"] = docs
+    # combined_qrels = {}
+    # for qid, docs in orig_qrels.items():
+    #     combined_qrels[qid + "-og"] = docs
+    # for qid, docs in new_qrels.items():
+    #     combined_qrels[qid + "-changed"] = docs
     
     # Combine runs with "-og" and "-changed" suffixes
-    combined_orig_run = {}
+    orig_run_suffix = {}
     for qid, docs in orig_run.items():
-        combined_orig_run[qid + "-og"] = docs
+        orig_run_suffix[qid + "-og"] = docs
     
-    combined_new_run = {}
+    new_run_suffix = {}
     for qid, docs in new_run.items():
-        combined_new_run[qid + "-changed"] = docs
+        new_run_suffix[qid + "-changed"] = docs
     
     # Determine changed documents (those with different relevance between og and changed qrels)
     changed_qrels = {}
@@ -341,6 +280,6 @@ def compute_followir_p_mrr(
             changed_qrels[qid] = changed
     
     # Use the imported calculate_pmrr function
-    p_mrr = calculate_pmrr(combined_orig_run, combined_new_run, changed_qrels)
+    p_mrr = calculate_pmrr(orig_run_suffix, new_run_suffix, changed_qrels)
     
     return p_mrr * 100.0 if scale_100 else p_mrr 

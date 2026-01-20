@@ -1,61 +1,55 @@
 model_config:
-  checkpoint_path: jfkback/hypencoder.6_layer
+  model_type: biencoder
+  checkpoint_path: /scratch-shared/scur1744/models/bebase
   tokenizer_pretrained_model_name_or_path: google-bert/bert-base-uncased
   query_encoder_kwargs:
     model_name_or_path: google-bert/bert-base-uncased
     freeze_transformer: false
-    embedding_representation: null
-    base_encoder_output_dim: 768
-    converter_kwargs:
-      vector_dimensions: [768, 768, 768, 768, 768, 768, 768, 1]
-      activation_type: relu
-      do_residual_on_last: false
+    pooling_type: cls
   passage_encoder_kwargs:
     model_name_or_path: google-bert/bert-base-uncased
     freeze_transformer: false
     pooling_type: cls
-  shared_encoder: false
+  shared_encoder: true
   loss_type:
     - cross_entropy
   loss_kwargs:
-    - {"use_in_batch_negatives": false, "only_use_first_item": false}
+    - {"use_in_batch_negatives": true, "only_use_first_item": false}
 data_config:
-  training_data_jsonl: data/msmarco_with_instructions/standard/tokenized.jsonl
+  training_data_jsonl: data/tot/train/tokenized_data.jsonl
   validation_data_jsonl: null
-  positive_filter_type: first
-  positive_filter_kwargs:
-    positive_type: positive
+  positive_filter_type: first 
   num_positives_to_sample: 1
-  num_negatives_to_sample: 1 # 5
+  num_negatives_to_sample: 1
 trainer_config:
   hf_trainer_config:
-    output_dir: /scratch-shared/scur1744/models/hypencoder_instruction_v2
+    output_dir: /scratch-shared/scur1744/models/bebase_tot
     overwrite_output_dir: true
     remove_unused_columns: false
     eval_strategy: 'no'
     per_device_train_batch_size: 48
     per_device_eval_batch_size: 48
     gradient_accumulation_steps: 2
-    dataloader_prefetch_factor: 5
+    dataloader_prefetch_factor: null
     dataloader_num_workers: 8
     dataloader_persistent_workers: false
-    learning_rate: 8.0e-06
+    learning_rate: 8.0e-06 
     weight_decay: 0.0
-    num_train_epochs: 1
+    num_train_epochs: 25 
     lr_scheduler_type: linear
-    warmup_ratio: 1.0e-01
-    warmup_steps: 0
+    warmup_ratio: 1.0e-01 
+    warmup_steps: 0 
     logging_strategy: steps
     logging_steps: 10
     max_steps: -1
     save_strategy: steps
-    save_steps: 10000
+    save_steps: 3300
     save_total_limit: null
     save_only_model: false
     bf16: true
     tf32: true
     fp16: false
-    run_name: "hypencoder_instruction_finetune"
+    run_name: "hypencoder_tot_finetune"
     disable_tqdm: true
     ddp_find_unused_parameters: true
     fsdp: ''
