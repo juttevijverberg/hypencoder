@@ -256,6 +256,14 @@ python hypencoder_cb/train/train.py hypencoder_cb/train/configs/retro_nofreeze_e
 ```
 
 ### Adversarial Attacks
+Generate attacked queries: 
+```
+python scripts/adversarial_attack/attacks.py \
+    --ir_dataset_name=$IR_DATASET_NAME \
+    --attack_types all \
+    --output_dir=$OUTPUT_DIR
+```
+Get retrieval results on attacked queries:
 ```
 python hypencoder_cb/inference/retrieve_multiple.py \
     --model_name_or_path=$MODEL_NAME_OR_PATH \
@@ -294,6 +302,10 @@ for ATTACK in "${ATTACK_TYPES[@]}"; do
     --metrics2_path "$METRICS20" \
     --output_path "$OUT_FILE"
 done
+```
+For generating the barplot (note: requires relative performance drops to be entered manually):
+```
+python scripts/plot_adversarial_attacks.py
 ```
 
 ## Artifacts
