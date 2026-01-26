@@ -22,7 +22,7 @@ model_config:
     - {}
     - {"use_in_batch_negatives": true, "only_use_first_item": true}
 data_config:
-  training_data_jsonl: /scratch-shared/scur1744/data/hypencoder-msmarco-training-dataset/train_0.jsonl
+  training_data_jsonl: /scratch-shared/scur1744/data/hypencoder-msmarco-training-dataset/train.jsonl
   validation_data_jsonl: null
   positive_filter_type: first
   label_key: score
@@ -42,7 +42,7 @@ trainer_config:
     dataloader_persistent_workers: false
     learning_rate: 1.0e-05 
     weight_decay: 0.01 
-    num_train_epochs: 3 
+    num_train_epochs: 1
     lr_scheduler_type: linear 
     warmup_ratio: 0.1 
     warmup_steps: 0 
@@ -50,7 +50,7 @@ trainer_config:
     logging_steps: 10
     max_steps: -1
     save_strategy: steps
-    save_steps: 2500
+    save_steps: 5000
     save_total_limit: null
     save_only_model: false
     bf16: true

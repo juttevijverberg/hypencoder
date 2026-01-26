@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_h100
+#SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
 #SBATCH --job-name=follow-ir_retrieve
 #SBATCH --ntasks=1
@@ -13,7 +13,7 @@ module load 2023
 module load Anaconda3/2023.07-2
 source activate hype
 
-export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/hypencoder_instruction_v2/checkpoint-5106"   
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/hypencoder_instruction/checkpoint-10211"   
 unset IR_DATASET_NAME
 
 declare -A TOPK
@@ -33,7 +33,20 @@ for type in og changed; do
         --output_dir=$RETRIEVAL_DIR \
         --query_jsonl="$HOME/hypencoder/data/followir/${data}-instructions/standard/${data}_instructions_queries_${type}.jsonl" \
         --qrel_json="$HOME/hypencoder/data/followir/${data}-instructions/standard/${data}_instructions_qrels_${type}.json" \
-        --metric_names='("AP", "nDCG@5","RR")' \
-        --top_k=${TOPK[$data]}
+        --metric_names='("AP", "nDCG@5","RR")' 
     done
 done
+
+# model="hypencoder"
+# for data in robust04 news21 core17; do
+#     export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/${model}_followir/${data}"
+#     export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/${model}_followir/${data}"
+#     mkdir -p "$RETRIEVAL_DIR"
+
+#     python scripts/evaluate_pmrr.py \
+#     --original_run_path="$HOME/hypencoder/retrieval_outputs/${model}_followir/${data}/og/retrieved_items.jsonl" \
+#     --new_run_path="$HOME/hypencoder/retrieval_outputs/${model}_followir/${data}/changed/retrieved_items.jsonl" \
+#     --output_dir=$RETRIEVAL_DIR \
+#     --original_qrel_json="$HOME/hypencoder/data/followir/${data}-instructions/standard/${data}_instructions_qrels_og.json" \
+#     --new_qrel_json="$HOME/hypencoder/data/followir/${data}-instructions/standard/${data}_instructions_qrels_changed.json"
+# done

@@ -13,9 +13,9 @@ module load 2023
 module load Anaconda3/2023.07-2
 source activate hype
 
-export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase_tot_og"   
-# export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase_tot/checkpoint-1650"                 # from huggingface using from_pretrained
-export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/bebase_tot_og"      # path to save encoded items
+#export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase_tot_og"   
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase"                 # from huggingface using from_pretrained
+export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/bebase_tot_no_ft"      # path to save encoded items
 mkdir -p "$ENCODING_PATH"
 
 python hypencoder_cb/inference/encode.py \
@@ -25,11 +25,11 @@ python hypencoder_cb/inference/encode.py \
   --ir_dataset_name="trec-tot/2023/dev"
 
 
-#export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase_instruction/checkpoint-5106" 
-export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase_instruction_og" 
+#export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase_instruction/checkpoint-10211" 
+# export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase_instruction_og" 
 
 for data in robust04 news21 core17; do
-    export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/bebase_followir_og/${data}"
+    export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/bebase_followir_no_ft/${data}"
     mkdir -p "$ENCODING_PATH"
 
     python hypencoder_cb/inference/encode.py \

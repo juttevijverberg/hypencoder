@@ -10,7 +10,7 @@ model_config:
     model_name_or_path: google-bert/bert-base-uncased
     freeze_transformer: false
     pooling_type: cls
-  shared_encoder: true
+  shared_encoder: false
   loss_type:
     - cross_entropy
   loss_kwargs:
@@ -20,7 +20,7 @@ data_config:
   validation_data_jsonl: null
   positive_filter_type: first 
   num_positives_to_sample: 1
-  num_negatives_to_sample: 1
+  num_negatives_to_sample: 5
 trainer_config:
   hf_trainer_config:
     output_dir: /scratch-shared/scur1744/models/bebase_tot
@@ -29,7 +29,7 @@ trainer_config:
     eval_strategy: 'no'
     per_device_train_batch_size: 48
     per_device_eval_batch_size: 48
-    gradient_accumulation_steps: 2
+    gradient_accumulation_steps: 1
     dataloader_prefetch_factor: null
     dataloader_num_workers: 8
     dataloader_persistent_workers: false

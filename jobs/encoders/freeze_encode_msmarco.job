@@ -6,19 +6,18 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=9
 #SBATCH --time=10:00:00
-#SBATCH --output=outputs/encode_msmarco.out
+#SBATCH --output=outputs/tasb_nofreeze_encode_msmarco.out
 
 module purge
 module load 2023
 module load Anaconda3/2023.07-2
-
 source activate hype
 
-export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"               
-export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/hypencoder_msmarco" 
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/tasb_nofreeze/checkpoint-3930"               
+export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/tasb_nofreeze_msmarco" 
 mkdir -p "$ENCODING_PATH"
 
 python hypencoder_cb/inference/encode.py \
   --model_name_or_path="$MODEL_NAME_OR_PATH" \
   --output_path="$ENCODING_PATH" \
-  --ir_dataset_name="msmarco-passage/dev/small"
+  --ir_dataset_name="msmarco-passage/dev/small" 

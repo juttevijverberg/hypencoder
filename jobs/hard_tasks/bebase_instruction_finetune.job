@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_a100
+#SBATCH --partition=gpu_h100
 #SBATCH --gpus=2
 #SBATCH --job-name=bebase_instruction_finetune
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=18
-#SBATCH --time=06:00:00
+#SBATCH --time=03:00:00
 #SBATCH --output=outputs/bebase_instruction_finetune.out
 
 module purge

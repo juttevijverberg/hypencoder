@@ -13,17 +13,9 @@ module load 2023
 module load Anaconda3/2023.07-2
 source activate hype
 
-model="bebase"
-#export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/${model}_instruction/checkpoint-5106"
-export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/${model}_instruction"
-
-unset IR_DATASET_NAME
+model="hypencoder"
 
 for data in robust04 news21 core17; do
-    export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/${model}_followir/${data}"
-    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/${model}_followir/${data}"
-    mkdir -p "$RETRIEVAL_DIR"
-
     python scripts/evaluate_pmrr.py \
     --original_run_path="$HOME/hypencoder/retrieval_outputs/${model}_followir/${data}/og/retrieved_items.jsonl" \
     --new_run_path="$HOME/hypencoder/retrieval_outputs/${model}_followir/${data}/changed/retrieved_items.jsonl" \

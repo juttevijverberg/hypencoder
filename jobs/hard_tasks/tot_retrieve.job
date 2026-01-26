@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_h100
+#SBATCH --partition=gpu_a100
 #SBATCH --gpus=1
 #SBATCH --job-name=tot_retrieve
 #SBATCH --ntasks=1
@@ -13,9 +13,10 @@ module load 2023
 module load Anaconda3/2023.07-2
 source activate hype
 
-export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/hypencoder_tot_v2/checkpoint-1650"                  # from huggingface using from_pretrained
-export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/hypencoder_tot"      # path to save encoded items
-export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/hypencoder_tot"
+export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"                  # from huggingface using from_pretrained
+# export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/hypencoder_tot/checkpoint-3300"                  # from huggingface using from_pretrained
+export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/hypencoder_tot_no_ft"      # path to save encoded items
+export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/hypencoder_tot_no_ft"
 mkdir -p "$RETRIEVAL_DIR"
 
 python hypencoder_cb/inference/retrieve.py \
