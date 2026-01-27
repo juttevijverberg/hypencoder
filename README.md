@@ -182,18 +182,32 @@ return a callable object which excepts a torch tensor in the shape (num_queries,
 
 ## Extensions
 ### Retrieve with Faiss
-BE-Base evaluation is performed without a separate encoding script, the dataset is encoded on-the-fly and performs optimized Faiss retrieval: 
-```
-export SAVE_ENCODED_DOCS_PATH="$HOME/hypencoder/encoded_items/be_base/trec-tot"
-mkdir -p "$SAVE_ENCODED_DOCS_PATH"
+The Faiss workflow is now split into two explicit steps so you can re-use encoded corpora across experiments.
 
-python scripts/evaluate_bebase_faiss.py \
-    --model_name_or_path=[path_to_be_base_checkpoint] \
-    --ir_dataset_name=trec-tot/2023/dev \
-    --output_dir="$HOME/hypencoder/retrieval_outputs/be_base/trec-tot" \
-    --save_encoded_docs_path="$SAVE_ENCODED_DOCS_PATH"
-```
-This script uses the tokenizer with the checkpoint, encodes both documents and queries using the BE-base dual encoder, and reports standard IR metrics via `ir_measures`. If you already encoded the corpus via `hypencoder_cb/inference/encode.py`, pass `--encoded_docs_path=/path/to/encoded/docs` to skip re-encoding and load the DocList artifacts directly. To persist freshly encoded documents for reuse, add `--save_encoded_docs_path=/path/to/save/doclist` and the script will export a DocList compatible with `load_encoded_items_from_disk`.
+1. **Encode the corpus once** (writes a DocList file that can be loaded later):
+    ```bash
+    export ENCODED_DOCS_FILE="$HOME/hypencoder/encoded_items/be_base/trec-tot/documents.docarray"
+    mkdir -p "$(dirname "$ENCODED_DOCS_FILE")"
+
+    python scripts/encode_bebase.py \
+        --model_name_or_path=[path_to_be_base_checkpoint] \
+        --ir_dataset_name=trec-tot/2023/dev \
+        --output_path="$ENCODED_DOCS_FILE"
+    ```
+
+2. **Retrieve + evaluate with Faiss** using the cached document representations:
+    ```bash
+    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/be_base/trec-tot"
+
+    python scripts/retrieve_bebase_faiss.py \
+        --model_name_or_path=[path_to_be_base_checkpoint] \
+        --ir_dataset_name=trec-tot/2023/dev \
+        --encoded_docs_path="$ENCODED_DOCS_FILE" \
+        --output_dir="$RETRIEVAL_DIR" \
+        --top_k=1000
+    ```
+
+Both scripts share the same tokenizer/encoder pair and produce the same metrics that were previously handled inside `scripts/evaluate_bebase_faiss.py`. The original script remains for backwards compatibility, but the dedicated `encode_bebase.py` + `retrieve_bebase_faiss.py` flow makes it obvious when encoded docs are saved and lets you re-run retrieval without repeating the expensive encoding step.
 
 ## Training
 To train a model take a look at the training readme in `/train`.

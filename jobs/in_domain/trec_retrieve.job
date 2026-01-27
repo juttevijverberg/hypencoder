@@ -1,11 +1,12 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_a100
+#SBATCH --partition=gpu_h100
 #SBATCH --gpus=1
-#SBATCH --job-name=in_domain_retrieve
+#SBATCH --job-name=trec_retrieve
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=9
-#SBATCH --time=14:00:00
+#SBATCH --cpus-per-task=27
+#SBATCH --mem=250G
+#SBATCH --time=01:00:00
 #SBATCH --output=outputs/trec19_retrieve_%A.out
 
 module purge
@@ -15,7 +16,7 @@ module load Anaconda3/2023.07-2
 source activate hype
 
 export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"
-export ENCODING_PATH="$HOME/hypencoder/encoded_items/trec-dl-2019"
+export ENCODING_PATH="$HOME/hypencoder/encoded_items/msmarco-passage-dev"
 export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/trec-dl-2019"
 mkdir -p "$RETRIEVAL_DIR"
 export IR_DATASET_NAME="msmarco-passage/trec-dl-2019/judged"
@@ -25,5 +26,4 @@ python hypencoder_cb/inference/retrieve.py \
 --encoded_item_path=$ENCODING_PATH \
 --output_dir=$RETRIEVAL_DIR \
 --ir_dataset_name=$IR_DATASET_NAME \
---query_max_length=64
-
+--dtype="bf16"

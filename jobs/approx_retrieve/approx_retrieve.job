@@ -5,9 +5,8 @@
 #SBATCH --job-name=run_approx_retrieve
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=27
-#SBATCH --mem=250G
-#SBATCH --time=03:00:00
-#SBATCH --output=outputs/approx_retrieve_trec-dl-2019_%A.out
+#SBATCH --time=01:00:00
+#SBATCH --output=outputs/approx_retrieve_trec-dl-19_%A.out
 
 module purge
 module load 2023
@@ -17,8 +16,8 @@ source activate hype
 
 export ENCODING_PATH="$HOME/hypencoder/encoded_items/msmarco-passage-dev"
 export MODEL_NAME_OR_PATH="jfkback/hypencoder.6_layer"
-export ITEM_NEIGHBOR_GRAPH="$HOME/hypencoder/neighbor_graph/msmarco-passage-dev/msmarco-passage-dev_neighbor_graph-bf16.jsonl"
-export RETRIEVAL_DIR="$HOME/hypencoder/approx_retrieval_outputs/trec-dl-2019-eff1-bf16"
+export ITEM_NEIGHBOR_GRAPH="/home/scur1708/hypencoder/neighbor_graph/msmarco-passage-dev/hypencoder.6_layer.neighbor_graph.jsonl"
+export RETRIEVAL_DIR="$HOME/hypencoder/approx_retrieval_outputs/trec-dl-19-eff1-bf16"
 export IR_DATASET_NAME="msmarco-passage/trec-dl-2019/judged"
 mkdir -p "$RETRIEVAL_DIR"
 
@@ -31,5 +30,4 @@ python hypencoder_cb/inference/approx_retrieve.py \
 --num_entry_points=10000 \
 --ncandidates=64 \
 --max_iter=16 \
---query_max_length=64 \
 --dtype="bf16"

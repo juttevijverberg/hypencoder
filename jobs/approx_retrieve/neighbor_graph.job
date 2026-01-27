@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #SBATCH --partition=gpu_h100
-#SBATCH --gpus=2
+#SBATCH --gpus=1
 #SBATCH --job-name=run_neighbor_graph
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=27
-#SBATCH --time=14:00:00
+#SBATCH --time=00:20:00
 #SBATCH --mem=250G
 #SBATCH --output=outputs/run_neighbor_graph_%A.out
 
@@ -18,7 +18,6 @@ module load Anaconda3/2023.07-2
 source activate hype
 
 python hypencoder_cb/inference/neighbor_graph.py \
---encoded_items_path="$HOME/hypencoder/encoded_items/msmarco-passage-dev.docs" \
---output_path="$HOME/hypencoder/neighbor_graph/msmarco-passage-dev/msmarco-passage-dev_neighbor_graph.jsonl" \
---batch_size=10 \
+--encoded_items_path="$HOME/hypencoder/encoded_items/nfcorpus.docs" \
+--output_path="$HOME/hypencoder/neighbor_graph/nfcorpus/nfcorpus_neighbor_graph.jsonl" \
 --top_k=100

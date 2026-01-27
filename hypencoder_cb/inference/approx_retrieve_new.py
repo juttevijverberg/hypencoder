@@ -7,8 +7,9 @@ from typing import Dict, List, Optional, Union
 
 import fire
 import torch
-from numpy import copy
-# import copy
+# from numpy import copy
+import sys
+import copy
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
@@ -93,8 +94,6 @@ class HypecoderGraphRetriever(BaseRetriever):
             .eval()
         )
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-
-        print("Using numpy copy and prev_candidates = copy(candidates)")
 
         if cache_file is not None and os.path.exists(cache_file):
             print(f"Loading from cache {cache_file}")
@@ -209,6 +208,8 @@ class HypecoderGraphRetriever(BaseRetriever):
 
         curr_iter = 0
         while curr_iter < self.max_iter:
+            print(f"Iteration: {curr_iter} -- Candidates to explore: {len(candidates)}")
+
             candidate_embeddings = self.encoded_item_embeddings[
                 [self.item_id_to_index[x] for x in candidates]
             ]
@@ -223,7 +224,7 @@ class HypecoderGraphRetriever(BaseRetriever):
             indices = indices.squeeze(0).cpu()
             values = values.squeeze(0).cpu()
 
-            prev_candidates = copy(candidates)
+            prev_candidates = copy.deepcopy(candidates)
             candidates = []
 
             added_candidates = 0
@@ -244,8 +245,7 @@ class HypecoderGraphRetriever(BaseRetriever):
                     else:
                         final_queue.put(current_min)
                 else:
-                    # If queue is not full add item to queue regardless of
-                    # score
+                    # If queue is not full add item to queue regardless of score
                     added_to_queue += 1
                     final_queue.put((score, item_id))
 
@@ -374,6 +374,8 @@ def do_retrieval(
 
     retriever_kwargs = retriever_kwargs if retriever_kwargs is not None else {}
 
+    print("dtype:", dtype)      # dtype from cmd line is printed here, not the default
+
     do_retrieval_shared(
         retriever_cls=HypecoderGraphRetriever,
         retriever_kwargs=dict(
@@ -406,4 +408,9 @@ def do_retrieval(
 
 
 if __name__ == "__main__":
+    
+    print("Command line arguments (sys.argv):")
+    for i, arg in enumerate(sys.argv):
+        print(f"  [{i}] {arg}")
+
     fire.Fire(do_retrieval)

@@ -4,9 +4,8 @@
 #SBATCH --gpus=1
 #SBATCH --job-name=run_encode
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=27
-#SBATCH --time=14:00:00
-#SBATCH --mem=250G
+#SBATCH --cpus-per-task=9
+#SBATCH --time=00:40:00
 #SBATCH --output=outputs/run_encode_%A.out
 
 module purge
@@ -17,6 +16,5 @@ source activate hype
 
 srun python -u hypencoder_cb/inference/encode.py \
   --model_name_or_path="jfkback/hypencoder.6_layer" \
-  --output_path="$HOME/hypencoder/encoded_items/fiqa" \
-  --ir_dataset_name="beir/fiqa/test" \
-  --dtype="bf16"
+  --output_path="$HOME/hypencoder/encoded_items/arguana" \
+  --ir_dataset_name="beir/arguana"
