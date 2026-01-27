@@ -1,5 +1,4 @@
 from typing import List, Optional
-
 import fire
 import torch
 from transformers import AutoTokenizer

@@ -1,4 +1,4 @@
-# Hypencoder
+# Hypencoder Reproduction
 This repository was adapted from the repo for the original paper, "Hypencoder: Hypernetworks for Information Retrieval" by Killingback et al. Link: https://arxiv.org/pdf/2502.05364
 
 The core code, data, and models are now available. This means you can train your own Hypencoder, use a pre-trained Hypencoder off-the-shelf, and reproduce the major results from the paper exactly.
@@ -180,35 +180,6 @@ To build a custom q-net you will need to make a new q-net converter similar to t
 3. `__call__` which takes three arguments `matrices`, `vectors`,  and `is_training`. See `RepeatedDenseBlockConverter` for details on the type of these arguments. This method should
 return a callable object which excepts a torch tensor in the shape (num_queries, num_items_per_query, hidden_dim) and returns a tensor with the shape (num_queries, num_items_per_query, 1) which contains the relevance score for each query and associated item.
 
-## Extensions
-### Retrieve with Faiss
-The Faiss workflow is now split into two explicit steps so you can re-use encoded corpora across experiments.
-
-1. **Encode the corpus once** (writes a DocList file that can be loaded later):
-    ```bash
-    export ENCODED_DOCS_FILE="$HOME/hypencoder/encoded_items/be_base/trec-tot/documents.docarray"
-    mkdir -p "$(dirname "$ENCODED_DOCS_FILE")"
-
-    python scripts/encode_bebase.py \
-        --model_name_or_path=[path_to_be_base_checkpoint] \
-        --ir_dataset_name=trec-tot/2023/dev \
-        --output_path="$ENCODED_DOCS_FILE"
-    ```
-
-2. **Retrieve + evaluate with Faiss** using the cached document representations:
-    ```bash
-    export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/be_base/trec-tot"
-
-    python scripts/retrieve_bebase_faiss.py \
-        --model_name_or_path=[path_to_be_base_checkpoint] \
-        --ir_dataset_name=trec-tot/2023/dev \
-        --encoded_docs_path="$ENCODED_DOCS_FILE" \
-        --output_dir="$RETRIEVAL_DIR" \
-        --top_k=1000
-    ```
-
-Both scripts share the same tokenizer/encoder pair and produce the same metrics that were previously handled inside `scripts/evaluate_bebase_faiss.py`. The original script remains for backwards compatibility, but the dedicated `encode_bebase.py` + `retrieve_bebase_faiss.py` flow makes it obvious when encoded docs are saved and lets you re-run retrieval without repeating the expensive encoding step.
-
 ## Training
 To train a model take a look at the training readme in `/train`.
 
@@ -235,13 +206,107 @@ Additional model checkpoints have been made available:
 
 
 ## Data
-The data used for our experiments is in the table below:
+The data of the original paper experiments is in the table below:
 <center>
 
 | Link | Description |
 |:------------------:|------------------|
 | [jfkback/hypencoder-msmarco-training-dataset](https://huggingface.co/datasets/jfkback/hypencoder-msmarco-training-dataset) | Main training data used to train all our Hypencoder models and BE-base |
 </center>
+
+The data for fine-tuning on hard tasks can be obtained through:
+```
+python script/load_data.py \
+--data FollowIR_train \ #Options: ["FollowIR_train", "FollowIR_test", "TOT_train", "TOT_test", "DL_HARD_test"]
+--dest data/followir/train
+
+```
+
+## Extensions
+### Retrieve with Faiss
+BE-Base evaluation is performed without a separate encoding script, the dataset is encoded on-the-fly and performs optimized Faiss retrieval: 
+```
+export SAVE_ENCODED_DOCS_PATH="$HOME/hypencoder/encoded_items/be_base/trec-tot"
+mkdir -p "$SAVE_ENCODED_DOCS_PATH"
+
+python scripts/evaluate_bebase_faiss.py \
+    --model_name_or_path=[path_to_be_base_checkpoint] \
+    --ir_dataset_name=trec-tot/2023/dev \
+    --output_dir="$HOME/hypencoder/retrieval_outputs/be_base/trec-tot" \
+    --save_encoded_docs_path="$SAVE_ENCODED_DOCS_PATH"
+```
+This script uses the tokenizer with the checkpoint, encodes both documents and queries using the BE-base dual encoder, and reports standard IR metrics via `ir_measures`. If you already encoded the corpus via `hypencoder_cb/inference/encode.py`, pass `--encoded_docs_path=/path/to/encoded/docs` to skip re-encoding and load the DocList artifacts directly. To persist freshly encoded documents for reuse, add `--save_encoded_docs_path=/path/to/save/doclist` and the script will export a DocList compatible with `load_encoded_items_from_disk`.
+
+### Fine-tune Hypencoder Reproduction
+```
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/finetune_FollowIR.yaml
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/finetune_TOT.yaml
+```
+
+### Fine-tune Alternative Encoders
+```
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/contriever_freeze_encoder.yaml 
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/contriever_nofreeze_encoder.yaml
+
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/tasb_freeze_encoder.yaml
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/tasb_nofreeze_encoder.yaml
+
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/retro_freeze_encoder.yaml
+python hypencoder_cb/train/train.py hypencoder_cb/train/configs/retro_nofreeze_encoder.yaml
+```
+
+### Adversarial Attacks
+Generate attacked queries: 
+```
+python scripts/adversarial_attack/attacks.py \
+    --ir_dataset_name=$IR_DATASET_NAME \
+    --attack_types all \
+    --output_dir=$OUTPUT_DIR
+```
+Get retrieval results on attacked queries:
+```
+python hypencoder_cb/inference/retrieve_multiple.py \
+    --model_name_or_path=$MODEL_NAME_OR_PATH \
+    --encoded_item_path=$ENCODING_PATH \
+    --base_data_dir=$BASE_DATA_DIR \
+    --base_output_dir=$BASE_OUTPUT_DIR \
+    --attack_types "['synonym', 'paraphrase', 'naturality', 'mispelling', 'ordering']" \
+    --qrel_json=$QREL_JSON \
+    --query_id_key="id" \
+    --query_text_key="text" \
+    --query_max_length=64
+```
+For combining the results of TREC 2019 and 2020 run:
+```
+ATTACK_TYPES=("mispelling" "naturality" "ordering" "paraphrase" "synonym")
+# ATTACK_TYPES=("regular")
+
+BASE_DIR="$HOME/hypencoder/retrieval_outputs"
+SCRIPT_DIR="$HOME/hypencoder/scripts"
+
+for ATTACK in "${ATTACK_TYPES[@]}"; do
+  METRICS19="$BASE_DIR/adversarial/be_base/trec-dl-2019/${ATTACK}/metrics/per_query_metrics.json"
+  METRICS20="$BASE_DIR/adversarial/be_base/trec-dl-2020/${ATTACK}/metrics/per_query_metrics.json"
+  OUT_DIR="$BASE_DIR/adversarial/be_base/trec-dl-19-20/${ATTACK}/metrics"
+  OUT_FILE="$OUT_DIR/aggregated_metrics.json"
+
+  echo "Aggregating metrics for attack: ${ATTACK}"
+  echo "  2019: $METRICS19"
+  echo "  2020: $METRICS20"
+  echo "  Out : $OUT_FILE"
+
+  mkdir -p "$OUT_DIR"
+
+  python "$SCRIPT_DIR/aggregate_trec_metrics.py" \
+    --metrics1_path "$METRICS19" \
+    --metrics2_path "$METRICS20" \
+    --output_path "$OUT_FILE"
+done
+```
+For generating the barplot (note: requires relative performance drops to be entered manually):
+```
+python scripts/plot_adversarial_attacks.py
+```
 
 ## Artifacts
 The artifacts from our experiments are in the table below:

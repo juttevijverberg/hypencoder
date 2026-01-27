@@ -1,5 +1,5 @@
 model_config:
-  checkpoint_path: jfkback/hypencoder.6_layer
+  hypernetwork_checkpoint_path: jfkback/hypencoder.6_layer
   tokenizer_pretrained_model_name_or_path: facebook/contriever-msmarco
   query_encoder_kwargs:
     model_name_or_path: facebook/contriever-msmarco
@@ -14,7 +14,6 @@ model_config:
     model_name_or_path: facebook/contriever-msmarco
     freeze_transformer: false
     pooling_type: mean
-    normalize_documents: true
   shared_encoder: true
   loss_type:
     - margin_mse

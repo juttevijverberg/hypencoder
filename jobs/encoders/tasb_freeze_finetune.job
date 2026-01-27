@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --partition=gpu_h100
+#SBATCH --partition=gpu_a100
 #SBATCH --gpus=2
-#SBATCH --job-name=tasbfreeze_finetune
+#SBATCH --job-name=tasb_freeze_finetune
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=36
 #SBATCH --time=03:00:00

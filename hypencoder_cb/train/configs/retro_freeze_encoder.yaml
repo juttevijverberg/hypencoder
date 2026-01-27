@@ -1,5 +1,5 @@
 model_config:
-  checkpoint_path: jfkback/hypencoder.6_layer
+  hypernetwork_checkpoint_path: jfkback/hypencoder.6_layer
   tokenizer_pretrained_model_name_or_path: Shitao/RetroMAE_MSMARCO_finetune
   query_encoder_kwargs:
     model_name_or_path: Shitao/RetroMAE_MSMARCO_finetune 

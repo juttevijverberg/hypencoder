@@ -1,0 +1,70 @@
+model_config:
+  model_type: biencoder
+  checkpoint_path: /scratch-shared/scur1744/models/bebase
+  tokenizer_pretrained_model_name_or_path: google-bert/bert-base-uncased
+  query_encoder_kwargs:
+    model_name_or_path: google-bert/bert-base-uncased
+    freeze_transformer: false
+    pooling_type: cls
+  passage_encoder_kwargs:
+    model_name_or_path: google-bert/bert-base-uncased
+    freeze_transformer: false
+    pooling_type: cls
+  shared_encoder: true
+  loss_type:
+    - cross_entropy
+  loss_kwargs:
+    - {"use_in_batch_negatives": true, "only_use_first_item": false}
+data_config:
+  training_data_jsonl: data/msmarco_with_instructions/standard/tokenized.jsonl
+  validation_data_jsonl: null
+  positive_filter_type: first
+  positive_filter_kwargs:
+    positive_type: positive
+  num_positives_to_sample: 1
+  num_negatives_to_sample: 1 
+trainer_config:
+  hf_trainer_config:
+    output_dir: /scratch-shared/scur1744/models/bebase_instruction
+    overwrite_output_dir: true
+    remove_unused_columns: false
+    eval_strategy: 'no'
+    per_device_train_batch_size: 48
+    per_device_eval_batch_size: 48
+    gradient_accumulation_steps: 2
+    dataloader_prefetch_factor: 5
+    dataloader_num_workers: 8
+    dataloader_persistent_workers: false
+    learning_rate: 8.0e-06
+    weight_decay: 0.0
+    num_train_epochs: 1
+    lr_scheduler_type: linear
+    warmup_ratio: 1.0e-01
+    warmup_steps: 0
+    logging_strategy: steps
+    logging_steps: 10
+    max_steps: -1
+    save_strategy: steps
+    save_steps: 10000
+    save_total_limit: null
+    save_only_model: false
+    bf16: true
+    tf32: true
+    fp16: false
+    run_name: "hypencoder_instruction_finetune"
+    disable_tqdm: true
+    ddp_find_unused_parameters: true
+    fsdp: ''
+    fsdp_config: null
+    report_to: none
+    push_to_hub: false
+    hub_model_id: null
+    hub_strategy: every_save
+    hub_private_repo: true
+    gradient_checkpointing: false
+    save_safetensors: false
+    adam_beta1: 0.9
+    adam_beta2: 0.999
+    adam_epsilon: 1.0e-08
+    torch_compile: false
+  resume_from_checkpoint: false

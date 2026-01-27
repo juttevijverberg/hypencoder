@@ -24,7 +24,6 @@ DEFAULT_CACHE_DIR = os.environ.get(
     "HYPENCODER_CACHE_DIR", os.path.expanduser("~/.cache/hypencoder")
 )
 
-
 def load_model(model_config: HypencoderModelConfig):
     config_cls_lookup = {
         "hypencoder": HypencoderDualEncoderConfig,
@@ -39,53 +38,7 @@ def load_model(model_config: HypencoderModelConfig):
     config_cls = config_cls_lookup[model_config.model_type]
     model_cls = model_cls_lookup[model_config.model_type]
 
-    if model_config.checkpoint_path is not None:
-        # Load the checkpoint with its original config to preserve hyperhead weights
-        print(f"Loading checkpoint from {model_config.checkpoint_path}")
-        model = model_cls.from_pretrained(model_config.checkpoint_path)
-
-        # 1. Replace transformers if needed
-        encoders_to_check = [("query_encoder", model_config.query_encoder_kwargs)]
-        if not model_config.shared_encoder:
-            encoders_to_check.append(("passage_encoder", model_config.passage_encoder_kwargs))
-
-        for enc_name, enc_kwargs in encoders_to_check:
-            encoder = getattr(model, enc_name)
-            new_path = enc_kwargs.get('model_name_or_path')
-            if new_path and new_path != encoder.transformer.config._name_or_path:
-                print(f"Replacing {enc_name} transformer: {encoder.transformer.config._name_or_path} -> {new_path}")
-                encoder.transformer = AutoModel.from_pretrained(new_path)
-                encoder.config.model_name_or_path = new_path
-                getattr(model.config, f"{enc_name}_kwargs")['model_name_or_path'] = new_path
-
-        # 2. Handle shared encoder
-        if model_config.shared_encoder:
-            model.passage_encoder.transformer = model.query_encoder.transformer
-            model.config.passage_encoder_kwargs['model_name_or_path'] = model.config.query_encoder_kwargs['model_name_or_path']
-            model.passage_encoder.config.model_name_or_path = model.query_encoder.config.model_name_or_path
-
-        # 3. Update general config & loss
-        model.config.shared_encoder = model_config.shared_encoder
-        model.config.loss_type = OmegaConf.to_container(model_config.loss_type, resolve=True)
-        model.config.loss_kwargs = OmegaConf.to_container(model_config.loss_kwargs, resolve=True)
-        model._get_similarity_loss(model.config)
-        model.similarity_loss_forward_kwargs = [{} for _ in range(len(model.similarity_losses))]
-
-        # 4. Update freezing settings
-        freeze_q = model_config.query_encoder_kwargs.get('freeze_transformer', False)
-        model.config.query_encoder_kwargs['freeze_transformer'] = freeze_q
-        for param in model.query_encoder.transformer.parameters():
-            param.requires_grad = not freeze_q
-
-        if model_config.shared_encoder:
-             model.config.passage_encoder_kwargs['freeze_transformer'] = freeze_q
-        else:
-            freeze_p = model_config.passage_encoder_kwargs.get('freeze_transformer', False)
-            model.config.passage_encoder_kwargs['freeze_transformer'] = freeze_p
-            for param in model.passage_encoder.transformer.parameters():
-                param.requires_grad = not freeze_p
-    else:
-        config = config_cls(
+    config = config_cls(
             query_encoder_kwargs=OmegaConf.to_container(
                 model_config.query_encoder_kwargs
             ),
@@ -96,9 +49,39 @@ def load_model(model_config: HypencoderModelConfig):
             loss_kwargs=OmegaConf.to_container(model_config.loss_kwargs),
             shared_encoder=model_config.shared_encoder,
         )
+
+    if model_config.checkpoint_path is not None:        
+        model = model_cls.from_pretrained(model_config.checkpoint_path, config=config)
+
+    elif model_config.hypernetwork_checkpoint_path is not None:
+        model = model_cls(config)
+        hypernetwork_donor = model_cls.from_pretrained(model_config.hypernetwork_checkpoint_path)
+        load_hypernetwork(model.query_encoder, hypernetwork_donor.query_encoder)
+
+    else:
         model = model_cls(config)
 
     return model
+
+def load_hypernetwork(dst_encoder, src_encoder):
+    HYPER_KEYS = {
+        "hyper_base_matrices",
+        "hyper_base_vectors",
+        "weight_query_embeddings",
+        "bias_query_embeddings",
+        "weight_hyper_projection",
+        "bias_hyper_projection",
+        "key_projections",
+        "value_projections",
+    }
+
+    src_sd = src_encoder.state_dict()
+    hyper_sd = {
+        k: v for k, v in src_sd.items()
+        if k.split(".")[0] in HYPER_KEYS
+    }
+
+    dst_encoder.load_state_dict(hyper_sd, strict=False)
 
 
 def load_data(data_config: HypencoderDataConfig):

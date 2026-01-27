@@ -14,22 +14,22 @@ model_config:
     model_name_or_path: google-bert/bert-base-uncased
     freeze_transformer: false
     pooling_type: cls
-  shared_encoder: true
+  shared_encoder: false
   loss_type:
     - cross_entropy
   loss_kwargs:
-    - {"use_in_batch_negatives": true, "only_use_first_item": false}
+    - {"use_in_batch_negatives": false, "only_use_first_item": false}
 data_config:
-  training_data_jsonl: data/FollowIR/train/tokenized_train.jsonl
+  training_data_jsonl: data/msmarco_with_instructions/standard/tokenized.jsonl
   validation_data_jsonl: null
   positive_filter_type: first
   positive_filter_kwargs:
     positive_type: positive
   num_positives_to_sample: 1
-  num_negatives_to_sample: 1 
+  num_negatives_to_sample: 1 # 5
 trainer_config:
   hf_trainer_config:
-    output_dir: /scratch-shared/scur1744/models/followir
+    output_dir: /scratch-shared/scur1744/models/hypencoder_instruction_v2
     overwrite_output_dir: true
     remove_unused_columns: false
     eval_strategy: 'no'
