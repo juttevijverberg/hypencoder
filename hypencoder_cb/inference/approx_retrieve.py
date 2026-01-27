@@ -7,9 +7,8 @@ from typing import Dict, List, Optional, Union
 
 import fire
 import torch
-# from numpy import copy
-import sys
-import copy
+from numpy import copy
+# import copy
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
@@ -94,6 +93,8 @@ class HypecoderGraphRetriever(BaseRetriever):
             .eval()
         )
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+
+        print("Using numpy copy and prev_candidates = copy(candidates)")
 
         if cache_file is not None and os.path.exists(cache_file):
             print(f"Loading from cache {cache_file}")
@@ -222,7 +223,7 @@ class HypecoderGraphRetriever(BaseRetriever):
             indices = indices.squeeze(0).cpu()
             values = values.squeeze(0).cpu()
 
-            prev_candidates = copy.deepcopy(candidates)
+            prev_candidates = copy(candidates)
             candidates = []
 
             added_candidates = 0
@@ -405,9 +406,4 @@ def do_retrieval(
 
 
 if __name__ == "__main__":
-    
-    print("Command line arguments (sys.argv):")
-    for i, arg in enumerate(sys.argv):
-        print(f"  [{i}] {arg}")
-
     fire.Fire(do_retrieval)
