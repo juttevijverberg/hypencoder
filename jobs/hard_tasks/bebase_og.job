@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=bebase_og
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=10:00:00
+#SBATCH --output=outputs/bebase_og.out
+
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+source activate hype
+
+
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase"
+export IR_DATASET_NAME="msmarco-passage/dev/small"
+export NAME="bebase_msmarco2"
+
+
+python scripts/be_base/retrieve_bebase_faiss.py \
+	--model_name_or_path=${MODEL_NAME_OR_PATH} \
+	--ir_dataset_name=${IR_DATASET_NAME} \
+	--encoded_docs_path="/scratch-shared/scur1744/encoded_items/${NAME}.docs" \
+	--output_dir="$HOME/hypencoder/retrieval_outputs/${NAME}" \
+	--top_k=1000
+
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase_tot_og"
+export IR_DATASET_NAME="trec-tot/2023/dev"
+export NAME="bebase_tot2"
+
+python scripts/be_base/encode_bebase.py \
+	--model_name_or_path=${MODEL_NAME_OR_PATH} \
+	--ir_dataset_name=${IR_DATASET_NAME} \
+	--output_path="/scratch-shared/scur1744/encoded_items/${NAME}.docs" \
+	--batch_size=64
+
+python scripts/be_base/retrieve_bebase_faiss.py \
+	--model_name_or_path="${MODEL_NAME_OR_PATH}" \
+	--ir_dataset_name="${IR_DATASET_NAME} \
+	--encoded_docs_path="/scratch-shared/scur1744/encoded_items/${NAME}.docs" \
+	--output_dir="$HOME/hypencoder/retrieval_outputs/${NAME}" \
+	--top_k=1000

@@ -355,6 +355,7 @@ class TextEncoder(PreTrainedModel):
     #     return summed / denom
     
     def mean_pool(self, last_hidden_state, attention_mask):
+        print("USING MEAN POOLING")
         return last_hidden_state.sum(dim=1) / attention_mask.sum(
             dim=1, keepdim=True
         )

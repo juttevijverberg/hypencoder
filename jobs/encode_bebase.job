@@ -14,9 +14,8 @@ module load Anaconda3/2023.07-2
 
 source activate hype
 
-export MODEL_NAME_OR_PATH="$HOME/hypencoder/models/be_base" 
-export ENCODING_PATH="$HOME/hypencoder/encoded_items/be_base/msmarco-passage-dev"    # path to save encoded items
-mkdir -p "$ENCODING_PATH"
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase" 
+export ENCODING_PATH="$HOME/hypencoder/encoded_items/TEST"    # path to save encoded items
 
 srun python -u hypencoder_cb/inference/encode_bebase.py \
   --model_name_or_path="$MODEL_NAME_OR_PATH" \
