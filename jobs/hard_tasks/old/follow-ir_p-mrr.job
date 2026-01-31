@@ -13,13 +13,13 @@ module load 2023
 module load Anaconda3/2023.07-2
 source activate hype
 
-model="hypencoder"
+model="bebase"
 
 for data in robust04 news21 core17; do
     python scripts/evaluate_pmrr.py \
-    --original_run_path="$HOME/hypencoder/retrieval_outputs/${model}_followir/${data}/og/retrieved_items.jsonl" \
-    --new_run_path="$HOME/hypencoder/retrieval_outputs/${model}_followir/${data}/changed/retrieved_items.jsonl" \
-    --output_dir=$RETRIEVAL_DIR \
+    --original_run_path="$HOME/hypencoder/retrieval_outputs/${model}_followir_og2/${data}/og/retrieved_items.jsonl" \
+    --new_run_path="$HOME/hypencoder/retrieval_outputs/${model}_followir_og2/${data}/changed/retrieved_items.jsonl" \
+    --output_dir="$HOME/hypencoder/retrieval_outputs/${model}_followir_og2/${data}" \
     --original_qrel_json="$HOME/hypencoder/data/followir/${data}-instructions/standard/${data}_instructions_qrels_og.json" \
     --new_qrel_json="$HOME/hypencoder/data/followir/${data}-instructions/standard/${data}_instructions_qrels_changed.json"
 done

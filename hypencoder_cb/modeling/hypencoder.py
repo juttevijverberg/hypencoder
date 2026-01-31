@@ -16,6 +16,8 @@ from hypencoder_cb.modeling.shared import (
 from hypencoder_cb.modeling.similarity_and_losses import (
     HypencoderCrossEntropyLoss,
     HypencoderMarginMSELoss,
+    BiEncoderCrossEntropyLoss,
+    BiEncoderMarginMSELoss,
 )
 
 

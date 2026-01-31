@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_h100
+#SBATCH --gpus=1
+#SBATCH --job-name=hypencoder_tot2
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --time=10:00:00
+#SBATCH --output=outputs/hypencoder_tot2.out
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+source activate hype
+
+python hypencoder_cb/inference/encode.py \
+	--model_name_or_path="/scratch-shared/scur1744/models/hypencoder_tot2/checkpoint-3300" \
+	--ir_dataset_name="trec-tot/2023/dev" \
+	--output_path="/scratch-shared/scur1744/encoded_items/hypencoder_tot2" 
+
+python hypencoder_cb/inference/retrieve.py \
+	--model_name_or_path="/scratch-shared/scur1744/models/hypencoder_tot2/checkpoint-3300" \
+	--ir_dataset_name="trec-tot/2023/dev" \
+	--encoded_item_path=/scratch-shared/scur1744/encoded_items/hypencoder_tot2 \
+	--output_dir="$HOME/hypencoder/retrieval_outputs/hypencoder_tot2" \
+	--top_k=1000
+

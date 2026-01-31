@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_mig
+#SBATCH --gpus=1
+#SBATCH --job-name=bebase_retrieve
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=10:00:00
+#SBATCH --output=outputs/bebase_retrieve.out
+
+
+module purge
+module load 2023
+module load Anaconda3/2023.07-2
+source activate hype
+
+
+export MODEL_NAME_OR_PATH="/scratch-shared/scur1744/models/bebase_instruction_og" 
+
+for type in og changed; do
+    for data in robust04 news21 core17; do
+        export ENCODING_PATH="/scratch-shared/scur1744/encoded_items/bebase_followir_2/${data}"
+        export RETRIEVAL_DIR="$HOME/hypencoder/retrieval_outputs/bebase_followir2/${data}/${type}"
+        mkdir -p "$RETRIEVAL_DIR"
+
+        python -m hypencoder_cb.inference.retrieve \
+        --model_name_or_path=$MODEL_NAME_OR_PATH \
+        --encoded_item_path=$ENCODING_PATH \
+        --output_dir=$RETRIEVAL_DIR \
+        --query_jsonl="$HOME/hypencoder/data/followir/${data}-instructions/standard/${data}_instructions_queries_${type}.jsonl" \
+        --qrel_json="$HOME/hypencoder/data/followir/${data}-instructions/standard/${data}_instructions_qrels_${type}.json" \
+        --metric_names='("AP", "nDCG@5", "RR")' \
+        --model_type="text_dual_encoder"
+    done
+done

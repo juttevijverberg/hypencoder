@@ -5,6 +5,8 @@ import os
 import pathlib
 import random
 import fire
+import ir_datasets
+import requests
 
 from collections import defaultdict
 from typing import Dict, List
@@ -167,13 +169,13 @@ def msmarco_with_instruct_to_standard():
         "samaya-ai/msmarco-w-instructions", split="train", streaming=False
     )
 
-    output_file = "data/msmarco_with_instructions/standard/train.all_queries.jsonl"
+    output_file = "data/msmarco_with_instructions/standard/train.has_instruction.jsonl"
     total_negatives = 5
 
     with JsonlWriter(output_file) as writer:
         for i, line in enumerate(tqdm(ds)):
-            # if not line["has_instruction"]:
-            #     continue
+            if not line["has_instruction"]:
+                continue
 
             items = []
             for passage in line["positive_passages"]:
@@ -361,6 +363,48 @@ def run_followir():
             f"{dataset_name_for_path.replace('-', '_')}",
             include_title=False,
         )
+
+def run_trecdlhard():
+    ds = ir_datasets.load("msmarco-passage/trec-dl-hard")
+    output_dir = f"data/trec-dl-hard"
+    output_dir = pathlib.Path(output_dir)
+    output_dir.mkdir(exist_ok=True, parents=True)
+
+    qrels = [
+        {"query_id": r.query_id, "doc_id": r.doc_id, "relevance": r.relevance}
+        for r in ds.qrels_iter()
+    ]
+
+    url = (
+        "https://raw.githubusercontent.com/grill-lab/DL-Hard/"
+        "2be6435c2b1f8131dfa23f3c0dee72f9dd47d849/"
+        "annotations/new_judgements/new_judgements-passage.passage-level.qrels"
+    )
+    resp = requests.get(url)
+    resp.raise_for_status()
+
+    new_qrels_set = set()
+    for line in resp.text.splitlines():
+        q, _, d, _ = line.split()
+        new_qrels_set.add((q, d))
+
+    qrels_half = [
+        r
+        for r in qrels
+        if (str(r["query_id"]), str(r["doc_id"])) not in new_qrels_set
+    ]
+
+    with JsonlWriter(output_dir / "qrels.json") as writer:
+        for r in qrels_half:
+            writer.write(r)
+
+    keep_query_ids = {r["query_id"] for r in qrels_half}
+
+    with JsonlWriter(output_dir / "queries.jsonl") as writer:
+        for q in ds.queries_iter():
+            if q.query_id in keep_query_ids:
+                obj = {"query_id": q.query_id, "text": q.text}
+                writer.write(obj)
 
 if __name__ == "__main__":
     fire.Fire()

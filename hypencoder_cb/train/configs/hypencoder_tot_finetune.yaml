@@ -27,7 +27,7 @@ data_config:
   num_negatives_to_sample: 5
 trainer_config:
   hf_trainer_config:
-    output_dir: /scratch-shared/scur1744/models/hypencoder_tot
+    output_dir: /scratch-shared/scur1744/models/hypencoder_tot2
     overwrite_output_dir: true
     remove_unused_columns: false
     eval_strategy: 'no'
